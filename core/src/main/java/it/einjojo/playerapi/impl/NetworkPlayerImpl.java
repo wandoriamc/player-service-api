@@ -5,12 +5,12 @@ import it.einjojo.playerapi.NetworkPlayer;
 import java.util.Optional;
 import java.util.UUID;
 
-public class SpringPlayerImpl extends OfflineSpringPlayerImpl implements NetworkPlayer {
+public class NetworkPlayerImpl extends OfflineNetworkPlayerImpl implements NetworkPlayer {
     private final String serverName;
     private final String proxyName;
     private final long sessionId;
 
-    public SpringPlayerImpl(UUID uniqueId, String name, long firstPlayed, long lastPlayed, long playtime, boolean online, String serverName, String proxyName, long sessionId) {
+    public NetworkPlayerImpl(UUID uniqueId, String name, long firstPlayed, long lastPlayed, long playtime, boolean online, String serverName, String proxyName, long sessionId) {
         super(uniqueId, name, firstPlayed, lastPlayed, playtime, online);
         this.serverName = serverName;
         this.proxyName = proxyName;

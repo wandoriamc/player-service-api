@@ -1,6 +1,7 @@
 package it.einjojo.playerapi;
 
 import java.io.Closeable;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -9,6 +10,28 @@ import java.util.function.Consumer;
  * PlayerAPI
  */
 public interface PlayerApi {
+
+    /**
+     * Gets a list of all online players.
+     *
+     * @return a list of online players.
+     */
+    CompletableFuture<List<NetworkPlayer>> getOnlinePlayers();
+
+    /**
+     * Gets the names of all online players.
+     *
+     * @return a list of player names.
+     */
+    CompletableFuture<List<String>> getOnlinePlayerNames();
+
+    /**
+     * Connects a player to a server.
+     *
+     * @param uuid        the player's UUID
+     * @param serviceName the name of the server to connect to. If the string does not contain a separator ('-'), it connects to a random server of the group.
+     */
+    void connectPlayerToServer(UUID uuid, String serviceName);
 
     CompletableFuture<OfflineNetworkPlayer> getOfflinePlayer(String playerName);
 

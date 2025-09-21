@@ -1,13 +1,13 @@
 package it.einjojo.playerapi.impl;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.protobuf.Empty;
 import io.grpc.ManagedChannel;
-import it.einjojo.playerapi.NetworkPlayer;
-import it.einjojo.playerapi.OfflineNetworkPlayer;
-import it.einjojo.playerapi.PlayerApi;
+import it.einjojo.playerapi.*;
 import it.einjojo.protocol.player.*;
 
 import java.io.Closeable;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -21,6 +21,7 @@ import java.util.function.Function;
 public abstract class AbstractPlayerApi implements PlayerApi {
     protected PlayerServiceGrpc.PlayerServiceFutureStub playerServiceStub;
     protected final Executor executor;
+    private static final Empty EMPTY = Empty.getDefaultInstance();
 
     /**
      * Constructor for AbstractPlayerApi.
@@ -32,6 +33,27 @@ public abstract class AbstractPlayerApi implements PlayerApi {
         this.playerServiceStub = PlayerServiceGrpc.newFutureStub(channel);
         this.executor = executor;
     }
+
+    private static List<NetworkPlayer> extractOnlinePlayers(GetOnlinePlayersResponse response) {
+        if (response.getPlayersList().isEmpty()) return List.of();
+        return response.getPlayersList().stream()
+                .map(PlayerMapper::toLocal)
+                .toList();
+    }
+
+
+    @Override
+    public CompletableFuture<List<NetworkPlayer>> getOnlinePlayers() {
+        ListenableFuture<GetOnlinePlayersResponse> future = playerServiceStub.getOnlinePlayers(EMPTY);
+        return createCallback(future, AbstractPlayerApi::extractOnlinePlayers);
+    }
+
+    @Override
+    public CompletableFuture<List<String>> getOnlinePlayerNames() {
+        ListenableFuture<GetOnlinePlayerNamesResponse> future = playerServiceStub.getOnlinePlayerNames(EMPTY);
+        return createCallback(future, (GetOnlinePlayerNamesResponse::getNamesList));
+    }
+
 
     @Override
     public CompletableFuture<OfflineNetworkPlayer> getOfflinePlayer(String playerName) {
@@ -91,11 +113,21 @@ public abstract class AbstractPlayerApi implements PlayerApi {
 
     @Override
     public Closeable subscribeLogin(Consumer<NetworkPlayer> playerConsumer) {
-        return null;
+        return getRedisPubSubHandler().subscribeLogin(((notify) -> {
+            playerConsumer.accept(PlayerMapper.toLocal(notify.getPlayer()));
+        }));
     }
 
     @Override
     public Closeable subscribeLogout(Consumer<OfflineNetworkPlayer> offlinePlayerConsumer) {
-        return null;
+        return getRedisPubSubHandler().subscribeLogout(((notify) -> {
+            offlinePlayerConsumer.accept(PlayerMapper.toLocal(notify.getPlayer()));
+        }));
     }
+
+    protected abstract RedisPubSubHandler getRedisPubSubHandler();
+
+    public abstract LocalOnlinePlayerAccessor getLocalOnlinePlayerAccessor();
+
+    public abstract void connectPlayerToServer(UUID uuid, String serviceName);
 }

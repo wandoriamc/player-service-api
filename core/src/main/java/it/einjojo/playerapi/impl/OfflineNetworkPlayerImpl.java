@@ -4,7 +4,7 @@ import it.einjojo.playerapi.OfflineNetworkPlayer;
 
 import java.util.UUID;
 
-public class OfflineSpringPlayerImpl implements OfflineNetworkPlayer {
+public class OfflineNetworkPlayerImpl implements OfflineNetworkPlayer {
     private final UUID uniqueId;
     private final String name;
     private final long firstPlayed;
@@ -13,7 +13,7 @@ public class OfflineSpringPlayerImpl implements OfflineNetworkPlayer {
     private final boolean online;
     private final long retrievalTime;
 
-    public OfflineSpringPlayerImpl(UUID uniqueId, String name, long firstPlayed, long lastPlayed, long playtime, boolean online) {
+    public OfflineNetworkPlayerImpl(UUID uniqueId, String name, long firstPlayed, long lastPlayed, long playtime, boolean online) {
         this.uniqueId = uniqueId;
         this.name = name;
         this.firstPlayed = firstPlayed;

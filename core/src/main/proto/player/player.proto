@@ -1,4 +1,5 @@
 syntax = "proto3";
+import "google/protobuf/empty.proto";
 package player;
 
 option java_outer_classname = "PlayerProto";
@@ -6,15 +7,33 @@ option java_multiple_files = true;
 option java_package = "it.einjojo.protocol.player";
 
 
+
+
 service PlayerService {
   rpc GetOfflinePlayerByUniqueId(PlayerIdRequest) returns (GetOfflinePlayerResponse);
   rpc GetOnlinePlayerByUniqueId(PlayerIdRequest) returns (GetOnlinePlayerResponse);
   rpc GetOfflinePlayerByName(PlayerNameRequest) returns (GetOfflinePlayerResponse);
   rpc GetOnlinePlayerByName(PlayerNameRequest) returns (GetOnlinePlayerResponse);
+
+  rpc GetOnlinePlayers(google.protobuf.Empty) returns (GetOnlinePlayersResponse);
+  rpc GetOnlinePlayerNames(google.protobuf.Empty) returns (GetOnlinePlayerNamesResponse);
+
   rpc UpdateConnection(UpdateConnectionRequest) returns (UpdateConnectionResponse);
   rpc Login(LoginRequest) returns (LoginNotify);
   rpc Logout(LogoutRequest) returns (LogoutNotify);
   rpc GetUniqueIdByName(PlayerNameRequest) returns (UniqueIdLookupResponse);
+}
+
+
+
+message GetOnlinePlayersResponse {
+  repeated OnlinePlayerDefinition players = 1;
+}
+
+
+
+message GetOnlinePlayerNamesResponse {
+  repeated string names = 1;
 }
 
 message OfflinePlayerDefinition {
@@ -86,5 +105,6 @@ message LogoutRequest {
 message LogoutNotify {
   bool success = 1;
   int64 closed_session_id = 2;
+  OfflinePlayerDefinition player = 3;
 }
 
