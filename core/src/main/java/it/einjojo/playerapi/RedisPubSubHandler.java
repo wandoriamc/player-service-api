@@ -32,7 +32,7 @@ public class RedisPubSubHandler extends RedisPubSubAdapter<byte[], byte[]> imple
         redisUri = redisConnectionConfiguration.createUri("playerapi");
     }
 
-    public Closeable subscribeLoginNotify(Consumer<LoginNotify> consumer) {
+    public Closeable subscribeLogin(Consumer<LoginNotify> consumer) {
         if (client == null) {
             client = RedisClient.create(redisUri);
             connection = client.connectPubSub(ByteArrayCodec.INSTANCE);
@@ -43,7 +43,7 @@ public class RedisPubSubHandler extends RedisPubSubAdapter<byte[], byte[]> imple
         return () -> loginNotifyConsumers.remove(consumer);
     }
 
-    public Closeable subscribeLogoutNotify(Consumer<LogoutNotify> consumer) {
+    public Closeable subscribeLogout(Consumer<LogoutNotify> consumer) {
         if (client == null) {
             client = RedisClient.create(redisUri);
             connection = client.connectPubSub(ByteArrayCodec.INSTANCE);
