@@ -2,6 +2,16 @@
 
 Klone das Projekt und führe `./gradlew api:publishToMavenLocal` aus.
 
+```groovy
+repositories {
+    mavenLocal()
+}
+
+dependencies {
+    compileOnly("it.einjojo.playerapi:api:1.1.0")
+}
+```
+
 ```java
 public class UsageExample {
     static {
