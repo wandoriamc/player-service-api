@@ -1,7 +1,6 @@
 # Usage
 
-Ziehe das Projekt und führe `./gradlew publishToMavenLocal` aus.
-
+Klone das Projekt und führe `./gradlew api:publishToMavenLocal` aus.
 
 ```java
 public class UsageExample {
