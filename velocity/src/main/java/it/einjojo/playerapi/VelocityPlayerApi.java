@@ -9,10 +9,8 @@ import it.einjojo.playerapi.impl.AbstractPlayerApi;
 import it.einjojo.playerapi.impl.PlayerMapper;
 import it.einjojo.protocol.player.*;
 
-import java.io.Closeable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.function.Consumer;
 
 public class VelocityPlayerApi extends AbstractPlayerApi {
     private final LocalOnlinePlayerAccessor localOnlinePlayerAccessor;
@@ -33,21 +31,12 @@ public class VelocityPlayerApi extends AbstractPlayerApi {
         return localOnlinePlayerAccessor;
     }
 
-    @Override
-    public Closeable subscribeLogin(Consumer<NetworkPlayer> playerConsumer) {
-        return null;
-    }
-
-    @Override
-    public Closeable subscribeLogout(Consumer<OfflineNetworkPlayer> offlinePlayerConsumer) {
-        return null;
-    }
 
     public CompletableFuture<NetworkPlayer> handleLogin(Player player) {
         String skinTexture = null;
         String skinSignature = null;
         for (var prop : player.getGameProfile().getProperties()) {
-            if (prop.getName().equals("textures" )) {
+            if (prop.getName().equals("textures")) {
                 skinTexture = prop.getValue();
                 skinSignature = prop.getSignature();
                 break;
@@ -56,7 +45,7 @@ public class VelocityPlayerApi extends AbstractPlayerApi {
         var future = super.playerServiceStub.login(LoginRequest.newBuilder()
                 .setUniqueId(player.getUniqueId().toString())
                 .setUsername(player.getUsername())
-                .setProxyName("velocity" )
+                .setProxyName("velocity")
                 .setSkinTexture(skinSignature)
                 .build());
         return createCallback(future, (response) -> PlayerMapper.toLocal(response.getPlayer()));

@@ -1,13 +1,13 @@
 package it.einjojo.playerapi.impl;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.protobuf.Empty;
 import io.grpc.ManagedChannel;
-import it.einjojo.playerapi.NetworkPlayer;
-import it.einjojo.playerapi.OfflineNetworkPlayer;
-import it.einjojo.playerapi.PlayerApi;
+import it.einjojo.playerapi.*;
 import it.einjojo.protocol.player.*;
 
 import java.io.Closeable;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -21,6 +21,7 @@ import java.util.function.Function;
 public abstract class AbstractPlayerApi implements PlayerApi {
     protected PlayerServiceGrpc.PlayerServiceFutureStub playerServiceStub;
     protected final Executor executor;
+    private static final Empty EMPTY = Empty.getDefaultInstance();
 
     /**
      * Constructor for AbstractPlayerApi.
@@ -31,6 +32,26 @@ public abstract class AbstractPlayerApi implements PlayerApi {
     public AbstractPlayerApi(ManagedChannel channel, Executor executor) {
         this.playerServiceStub = PlayerServiceGrpc.newFutureStub(channel);
         this.executor = executor;
+    }
+
+    @Override
+    public CompletableFuture<List<NetworkPlayer>> getOnlinePlayers() {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<List<String>> getOnlinePlayerNames() {
+        return null;
+    }
+
+    @Override
+    public void connectPlayerToServer(UUID uuid, String serviceName) {
+
+    }
+
+    @Override
+    public LocalOnlinePlayerAccessor getLocalOnlinePlayerAccessor() {
+        return null;
     }
 
     @Override
@@ -91,11 +112,17 @@ public abstract class AbstractPlayerApi implements PlayerApi {
 
     @Override
     public Closeable subscribeLogin(Consumer<NetworkPlayer> playerConsumer) {
-        return null;
+        return getRedisPubSubHandler().subscribeLogin(((notify) -> {
+            playerConsumer.accept(PlayerMapper.toLocal(notify.getPlayer()));
+        }));
     }
 
     @Override
     public Closeable subscribeLogout(Consumer<OfflineNetworkPlayer> offlinePlayerConsumer) {
-        return null;
+        return getRedisPubSubHandler().subscribeLogout(((notify) -> {
+            offlinePlayerConsumer.accept(PlayerMapper.toLocal(notify.getPlayer()));
+        }));
     }
+
+    abstract RedisPubSubHandler getRedisPubSubHandler();
 }

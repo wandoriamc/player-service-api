@@ -1,7 +1,7 @@
 package it.einjojo.playerapi.impl;
 
-import it.einjojo.playerapi.OfflineNetworkPlayer;
 import it.einjojo.playerapi.NetworkPlayer;
+import it.einjojo.playerapi.OfflineNetworkPlayer;
 import it.einjojo.protocol.player.GetOfflinePlayerResponse;
 import it.einjojo.protocol.player.GetOnlinePlayerResponse;
 import it.einjojo.protocol.player.OfflinePlayerDefinition;
@@ -9,10 +9,11 @@ import it.einjojo.protocol.player.OnlinePlayerDefinition;
 
 import java.util.UUID;
 
+
 public class PlayerMapper {
 
     public static OfflineNetworkPlayer toLocal(OfflinePlayerDefinition playerDefinition) {
-        return new OfflineSpringPlayerImpl(
+        return new OfflineNetworkPlayerImpl(
                 UUID.fromString(playerDefinition.getUniqueId()),
                 playerDefinition.getUsername(),
                 playerDefinition.getFirstLogin(),
@@ -23,7 +24,7 @@ public class PlayerMapper {
     }
 
     public static NetworkPlayer toLocal(OnlinePlayerDefinition playerDefinition) {
-        return new SpringPlayerImpl(
+        return new NetworkPlayerImpl(
                 UUID.fromString(playerDefinition.getUniqueId()),
                 playerDefinition.getUsername(),
                 playerDefinition.getFirstLogin(),
