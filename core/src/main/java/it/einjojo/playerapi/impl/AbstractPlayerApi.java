@@ -34,25 +34,26 @@ public abstract class AbstractPlayerApi implements PlayerApi {
         this.executor = executor;
     }
 
+    private static List<NetworkPlayer> extractOnlinePlayers(GetOnlinePlayersResponse response) {
+        if (response.getPlayersList().isEmpty()) return List.of();
+        return response.getPlayersList().stream()
+                .map(PlayerMapper::toLocal)
+                .toList();
+    }
+
+
     @Override
     public CompletableFuture<List<NetworkPlayer>> getOnlinePlayers() {
-        return null;
+        ListenableFuture<GetOnlinePlayersResponse> future = playerServiceStub.getOnlinePlayers(EMPTY);
+        return createCallback(future, AbstractPlayerApi::extractOnlinePlayers);
     }
 
     @Override
     public CompletableFuture<List<String>> getOnlinePlayerNames() {
-        return null;
+        ListenableFuture<GetOnlinePlayerNamesResponse> future = playerServiceStub.getOnlinePlayerNames(EMPTY);
+        return createCallback(future, (GetOnlinePlayerNamesResponse::getNamesList));
     }
 
-    @Override
-    public void connectPlayerToServer(UUID uuid, String serviceName) {
-
-    }
-
-    @Override
-    public LocalOnlinePlayerAccessor getLocalOnlinePlayerAccessor() {
-        return null;
-    }
 
     @Override
     public CompletableFuture<OfflineNetworkPlayer> getOfflinePlayer(String playerName) {
@@ -124,5 +125,9 @@ public abstract class AbstractPlayerApi implements PlayerApi {
         }));
     }
 
-    abstract RedisPubSubHandler getRedisPubSubHandler();
+    protected abstract RedisPubSubHandler getRedisPubSubHandler();
+
+    public abstract LocalOnlinePlayerAccessor getLocalOnlinePlayerAccessor();
+
+    public abstract void connectPlayerToServer(UUID uuid, String serviceName);
 }

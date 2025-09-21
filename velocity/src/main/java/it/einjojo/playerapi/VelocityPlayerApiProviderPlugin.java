@@ -9,6 +9,8 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import io.grpc.ManagedChannel;
 import it.einjojo.playerapi.config.PluginConfig;
+import it.einjojo.playerapi.config.RedisConnectionConfiguration;
+import it.einjojo.playerapi.config.SharedConnectionConfiguration;
 import it.einjojo.playerapi.listener.ConnectionListener;
 import org.slf4j.Logger;
 
@@ -43,25 +45,26 @@ public class VelocityPlayerApiProviderPlugin {
     public void onProxyInitialization(ProxyInitializeEvent event) {
         PluginConfig config = PluginConfig.load(dataDirectory);
         channel = config.createChannel();
-        VelocityPlayerApi playerApi = new VelocityPlayerApi(channel, executor, server);
+        RedisConnectionConfiguration redis = SharedConnectionConfiguration.load().map(SharedConnectionConfiguration::redis).orElseGet(config::redis);
+        VelocityPlayerApi playerApi = new VelocityPlayerApi(channel, executor, server, redis);
         PlayerApiProvider.register(playerApi);
         server.getEventManager().register(this, new ConnectionListener(playerApi, logger));
-        logger.info("PlayerApi Velocity plugin has been initialized." );
+        logger.info("PlayerApi Velocity plugin has been initialized.");
     }
 
     @Subscribe
     public void onProxyShutdown(ProxyShutdownEvent event) {
         if (channel != null && !channel.isShutdown()) {
             channel.shutdownNow();
-            logger.info("gRPC channel has been shut down." );
+            logger.info("gRPC channel has been shut down.");
         } else {
-            logger.warn("gRPC channel was already shut down or not initialized." );
+            logger.warn("gRPC channel was already shut down or not initialized.");
         }
         if (!executor.isShutdown()) {
             executor.shutdownNow();
-            logger.info("Executor service has been shut down." );
+            logger.info("Executor service has been shut down.");
         } else {
-            logger.warn("Executor service was already shut down or not initialized." );
+            logger.warn("Executor service was already shut down or not initialized.");
         }
 
 

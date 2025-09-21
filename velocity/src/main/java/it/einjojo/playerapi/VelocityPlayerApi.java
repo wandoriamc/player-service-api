@@ -3,17 +3,22 @@ package it.einjojo.playerapi;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.ServerConnection;
+import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
 import io.grpc.ManagedChannel;
+import it.einjojo.playerapi.config.RedisConnectionConfiguration;
 import it.einjojo.playerapi.impl.AbstractPlayerApi;
 import it.einjojo.playerapi.impl.PlayerMapper;
 import it.einjojo.protocol.player.*;
 
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 public class VelocityPlayerApi extends AbstractPlayerApi {
     private final LocalOnlinePlayerAccessor localOnlinePlayerAccessor;
+    private final RedisPubSubHandler redisPubSubHandler;
+    private final ProxyServer proxyServer;
 
     /**
      * Constructor for AbstractPlayerApi.
@@ -21,14 +26,21 @@ public class VelocityPlayerApi extends AbstractPlayerApi {
      * @param channel  the gRPC channel to communicate with the player service
      * @param executor the executor to run the callbacks on
      */
-    public VelocityPlayerApi(ManagedChannel channel, Executor executor, ProxyServer proxyServer) {
+    public VelocityPlayerApi(ManagedChannel channel, Executor executor, ProxyServer proxyServer, RedisConnectionConfiguration redisConnectionConfiguration) {
         super(channel, executor);
+        this.proxyServer = proxyServer;
         this.localOnlinePlayerAccessor = new VelocityLocalPlayerAccessor(proxyServer);
+        this.redisPubSubHandler = new RedisPubSubHandler(redisConnectionConfiguration);
     }
 
     @Override
     public LocalOnlinePlayerAccessor getLocalOnlinePlayerAccessor() {
         return localOnlinePlayerAccessor;
+    }
+
+    @Override
+    protected RedisPubSubHandler getRedisPubSubHandler() {
+        return redisPubSubHandler;
     }
 
 
@@ -64,5 +76,25 @@ public class VelocityPlayerApi extends AbstractPlayerApi {
                 .setConnectedServerName(serverName)
                 .build());
         return createCallback(future, UpdateConnectionResponse::getSuccess);
+    }
+
+    @Override
+    public void connectPlayerToServer(UUID uuid, String serviceName) {
+        RegisteredServer server;
+        if (serviceName.contains("-")) {
+            server = proxyServer.getServer(serviceName).orElse(null);
+        } else {
+            server = null;
+            for (var s : proxyServer.getAllServers()) {
+                if (s.getServerInfo().getName().startsWith(serviceName)) {
+                    server = s;
+                    break;
+                }
+            }
+        }
+        if (server == null) return;
+        Player player = proxyServer.getPlayer(uuid).orElse(null);
+        if (player == null) return;
+        player.createConnectionRequest(server).fireAndForget();
     }
 }

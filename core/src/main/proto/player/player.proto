@@ -15,7 +15,7 @@ service PlayerService {
   rpc GetOfflinePlayerByName(PlayerNameRequest) returns (GetOfflinePlayerResponse);
   rpc GetOnlinePlayerByName(PlayerNameRequest) returns (GetOnlinePlayerResponse);
 
-  rpc GetOnlinePlayers(google.protobuf.Empty) returns (GetOnlinePlayerResponse);
+  rpc GetOnlinePlayers(google.protobuf.Empty) returns (GetOnlinePlayersResponse);
   rpc GetOnlinePlayerNames(google.protobuf.Empty) returns (GetOnlinePlayerNamesResponse);
 
   rpc UpdateConnection(UpdateConnectionRequest) returns (UpdateConnectionResponse);
