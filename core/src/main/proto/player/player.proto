@@ -83,5 +83,6 @@ message LogoutRequest {
 
 message LogoutNotify {
   bool success = 1;
+  int64 closed_session_id = 2;
 }
 
