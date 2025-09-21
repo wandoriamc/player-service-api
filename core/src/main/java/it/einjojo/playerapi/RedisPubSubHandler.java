@@ -18,6 +18,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 
+/**
+ * Listens to playerapi:login and playerapi:logout channels and dispatches the received protobuf messages to the provided consumers.
+ */
 public class RedisPubSubHandler extends RedisPubSubAdapter<byte[], byte[]> implements Closeable {
     private static final byte[] LOGIN_NOTIFY_CHANNEL = "playerapi:login".getBytes();
     private static final byte[] LOGOUT_NOTIFY_CHANNEL = "playerapi:logout".getBytes();

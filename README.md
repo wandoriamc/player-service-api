@@ -1,0 +1,25 @@
+# Usage
+
+Ziehe das Projekt und führe `./gradlew publishToMavenLocal` aus.
+
+
+```java
+public class UsageExample {
+    static {
+        PlayerApi api = PlayerApiProvider.getInstance();
+        api.getOnlinePlayer(UUID.randomUUID()).thenAccept(player -> {
+            long sessionMillis = player.getSessionTime();
+        }).exceptionally(ex -> {
+            // render error
+            return null;
+        });
+    }
+}
+```
+
+PubSub-Channels
+---
+
+`playerapi:login`
+`playerapi:logout`
+

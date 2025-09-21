@@ -71,10 +71,12 @@ message LoginRequest {
   string username = 2;
   string proxy_name = 3;
   string skin_texture = 4;
+  string skin_signature = 5;
 }
 
 message LoginNotify {
   OnlinePlayerDefinition player = 1;
+  uint64 timestamp = 2;
 }
 
 message LogoutRequest {
