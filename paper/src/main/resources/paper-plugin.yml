@@ -1,0 +1,7 @@
+name: PlayerAPI
+version: 'DEV'
+main: it.einjojo.playerapi.PaperPlayerApiProviderPlugin
+description: Paper Test Plugin
+api-version: '1.21.4'
+authors:
+  - Ein_Jojo

@@ -1,0 +1,87 @@
+syntax = "proto3";
+package player;
+
+option java_outer_classname = "PlayerProto";
+option java_multiple_files = true;
+option java_package = "it.einjojo.protocol.player";
+
+
+service PlayerService {
+  rpc GetOfflinePlayerByUniqueId(PlayerIdRequest) returns (GetOfflinePlayerResponse);
+  rpc GetOnlinePlayerByUniqueId(PlayerIdRequest) returns (GetOnlinePlayerResponse);
+  rpc GetOfflinePlayerByName(PlayerNameRequest) returns (GetOfflinePlayerResponse);
+  rpc GetOnlinePlayerByName(PlayerNameRequest) returns (GetOnlinePlayerResponse);
+  rpc UpdateConnection(UpdateConnectionRequest) returns (UpdateConnectionResponse);
+  rpc Login(LoginRequest) returns (LoginNotify);
+  rpc Logout(LogoutRequest) returns (LogoutNotify);
+  rpc GetUniqueIdByName(PlayerNameRequest) returns (UniqueIdLookupResponse);
+}
+
+message OfflinePlayerDefinition {
+  string unique_id = 1;
+  string username = 2;
+  int64 first_login = 3;
+  int64 last_login = 4;
+  int64 online_time = 5;
+  bool online = 6;
+}
+
+message PlayerIdRequest {
+  string unique_id = 1;
+}
+
+message PlayerNameRequest {
+  string name = 1;
+}
+
+message GetOnlinePlayerResponse {
+  OnlinePlayerDefinition player = 1;
+}
+
+message OnlinePlayerDefinition {
+  string unique_id = 1;
+  string username = 2;
+  int64 first_login = 3;
+  int64 last_login = 4;
+  int64 online_time = 5;
+  string connected_server_name = 6;
+  string connected_proxy_name = 7;
+  int64 session_id = 8;
+}
+
+message UniqueIdLookupResponse {
+  string unique_id = 1;
+}
+
+message GetOfflinePlayerResponse {
+  OfflinePlayerDefinition player = 1;
+}
+
+message UpdateConnectionRequest {
+  string unique_id = 1;
+  string connected_server_name = 2;
+}
+
+message UpdateConnectionResponse {
+  bool success = 1;
+}
+
+message LoginRequest {
+  string unique_id = 1;
+  string username = 2;
+  string proxy_name = 3;
+  string skin_texture = 4;
+}
+
+message LoginNotify {
+  OnlinePlayerDefinition player = 1;
+}
+
+message LogoutRequest {
+  string unique_id = 1;
+}
+
+message LogoutNotify {
+  bool success = 1;
+}
+
