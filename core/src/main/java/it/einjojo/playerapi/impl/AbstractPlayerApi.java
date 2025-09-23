@@ -19,7 +19,7 @@ import java.util.function.Function;
  * This class uses gRPC to communicate with a player service and provides methods to retrieve player information
  */
 public abstract class AbstractPlayerApi implements PlayerApi {
-    protected PlayerServiceGrpc.PlayerServiceFutureStub playerServiceStub;
+    public PlayerServiceGrpc.PlayerServiceFutureStub playerServiceStub;
     protected final Executor executor;
     private static final Empty EMPTY = Empty.getDefaultInstance();
 

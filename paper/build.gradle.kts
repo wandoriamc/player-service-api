@@ -11,10 +11,10 @@ dependencies {
 }
 
 paper {
-    name = "Abilities"
+    name = "PlayerApi"
     main = "it.einjojo.playerapi.PaperPlayerApiProviderPlugin"
     authors = listOf("EinJOJO")
-    description = "Abilities"
+    description = "Player Service Api"
     apiVersion = "1.21"
     generateLibrariesJson = true
     loader = "it.einjojo.playerapi.PluginLibrariesLoader"

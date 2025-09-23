@@ -5,6 +5,8 @@ import io.grpc.ManagedChannel;
 import it.einjojo.playerapi.config.PluginConfig;
 import it.einjojo.playerapi.config.RedisConnectionConfiguration;
 import it.einjojo.playerapi.config.SharedConnectionConfiguration;
+import it.einjojo.playerapi.listener.PaperConnectionHandler;
+import it.einjojo.playerapi.util.DefaultServerNameProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -28,6 +30,10 @@ public class PaperPlayerApiProviderPlugin extends JavaPlugin {
         PlayerApiProvider.register(playerApi);
         Bukkit.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         getSLF4JLogger().info("PlayerApi Paper plugin has been initialized.");
+        if (getServer().getOnlineMode()) {
+            getSLF4JLogger().info("Detected online mode. This Server will handle authentication for players.");
+            new PaperConnectionHandler(this, playerApi, executor, new DefaultServerNameProvider().getServerName());
+        }
     }
 
 

@@ -3,7 +3,7 @@ package it.einjojo.playerapi;
 import io.grpc.ManagedChannel;
 import it.einjojo.playerapi.config.RedisConnectionConfiguration;
 import it.einjojo.playerapi.impl.AbstractPlayerApi;
-import it.einjojo.playerapi.util.PlayerConnector;
+import it.einjojo.playerapi.util.PluginMessagePlayerConnector;
 
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -38,6 +38,6 @@ public class PaperPlayerApi extends AbstractPlayerApi {
 
     @Override
     public void connectPlayerToServer(UUID uuid, String serviceName) {
-        PlayerConnector.getInstance().connectPlayerToServer(uuid, serviceName);
+        PluginMessagePlayerConnector.getInstance().connectPlayerToServer(uuid, serviceName);
     }
 }

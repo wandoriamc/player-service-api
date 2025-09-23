@@ -1,8 +1,6 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 
-
-
 plugins {
     id("java")
     id("com.gradleup.shadow") version "9.0.0"
@@ -35,10 +33,16 @@ subprojects {
     if (project.name != "api" && project.name != "playerapi") {
         tasks.named("shadowJar", ShadowJar::class) {
             destinationDirectory.set(rootProject.layout.buildDirectory.dir("libs"))
+            archiveClassifier.set("")
+            archiveBaseName.set("playerapi-${project.name}")
             relocate("io.grpc", "it.einjojo.playerapi.libs.grpc")
             mergeServiceFiles()
         }
     }
 }
-
+tasks {
+    shadowJar {
+        enabled = false;
+    }
+}
 

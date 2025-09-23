@@ -10,11 +10,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
-public class PlayerConnector {
-    private static final PlayerConnector INSTANCE = new PlayerConnector();
-    private static final Logger log = LoggerFactory.getLogger(PlayerConnector.class);
+public class PluginMessagePlayerConnector {
+    private static final PluginMessagePlayerConnector INSTANCE = new PluginMessagePlayerConnector();
+    private static final Logger log = LoggerFactory.getLogger(PluginMessagePlayerConnector.class);
 
-    public static PlayerConnector getInstance() {
+    public static PluginMessagePlayerConnector getInstance() {
         return INSTANCE;
     }
 
