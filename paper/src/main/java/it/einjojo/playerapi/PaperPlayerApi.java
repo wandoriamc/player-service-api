@@ -4,6 +4,7 @@ import io.grpc.ManagedChannel;
 import it.einjojo.playerapi.config.RedisConnectionConfiguration;
 import it.einjojo.playerapi.impl.AbstractPlayerApi;
 import it.einjojo.playerapi.util.PluginMessagePlayerConnector;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -11,6 +12,7 @@ import java.util.concurrent.Executor;
 /**
  * Can be obtained by {@link PlayerApiProvider} on paper servers.
  */
+@NullMarked
 public class PaperPlayerApi extends AbstractPlayerApi {
     private final LocalOnlinePlayerAccessor localOnlinePlayerAccessor;
     private final RedisPubSubHandler redisPubSubHandler;

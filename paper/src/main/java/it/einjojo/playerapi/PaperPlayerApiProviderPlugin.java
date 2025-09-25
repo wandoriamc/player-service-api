@@ -16,6 +16,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
+/**
+ * Has config and supports the shared connection specification.
+ * If running the server in online mode, the plugin will handle login and logout.
+ */
 public class PaperPlayerApiProviderPlugin extends JavaPlugin {
     private final Logger log = getSLF4JLogger();
     public static PaperPlayerApiProviderPlugin INSTANCE;
@@ -23,6 +27,9 @@ public class PaperPlayerApiProviderPlugin extends JavaPlugin {
     private ManagedChannel channel;
 
 
+    /**
+     * Performs redis connection tests and provides the paper api implementation.
+     */
     @Override
     public void onEnable() {
         INSTANCE = this;

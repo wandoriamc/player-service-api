@@ -13,6 +13,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * Configuration for the plugin, including gRPC and Redis settings.
+ *
+ * @param gsonAddress the address of the gRPC server
+ * @param gsonPort    the port of the gRPC server
+ * @param redis       the redis configuration
+ */
 public record PluginConfig(String gsonAddress, int gsonPort, RedisConnectionConfiguration redis) {
     public static PluginConfig load(Path folder) {
         try {
@@ -54,6 +61,7 @@ public record PluginConfig(String gsonAddress, int gsonPort, RedisConnectionConf
     public ManagedChannel createChannel() {
         return ManagedChannelBuilder.forAddress(gsonAddress, gsonPort)
                 .disableRetry()
+                .usePlaintext()
                 .build();
     }
 
