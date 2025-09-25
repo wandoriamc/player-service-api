@@ -74,6 +74,8 @@ public class PaperConnectionHandler implements Listener {
                 .setSkinSignature(skinSignature)
                 .build());
         loginFuture.addListener(() -> updateServer(event.getPlayer()), executor);
+
+
     }
 
     private void updateServer(Player player) {

@@ -2,6 +2,10 @@ package it.einjojo.playerapi;
 
 import java.util.Optional;
 
+/**
+ * Player that is online.
+ *
+ */
 public interface NetworkPlayer extends OfflineNetworkPlayer {
     /**
      * getter

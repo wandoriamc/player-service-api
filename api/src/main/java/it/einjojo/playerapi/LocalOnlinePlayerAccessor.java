@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.UUID;
 
 /**
- * Accesses the implementation's player-container and can determine whether a player is online locally or not.
+ * Accesses the implementation's (player / velocity) player-container and can determine whether a player is online locally or not.
  */
 public interface LocalOnlinePlayerAccessor {
 
@@ -18,6 +18,12 @@ public interface LocalOnlinePlayerAccessor {
 
     boolean isOnline(String name);
 
+    /**
+     * Get all names of local online players.
+     *
+     * @return a collection of player names.
+     */
     Collection<String> getPlayerNames();
+
 
 }

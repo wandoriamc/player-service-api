@@ -13,7 +13,7 @@ public class DefaultServerNameProvider {
     private final String serverName;
 
     public DefaultServerNameProvider() {
-        String name = "unknown-" + UUID.randomUUID();
+        String name = "unknown-" + UUID.randomUUID().toString().split("-")[0];
         try {
             var method = Bukkit.getServer().getClass().getDeclaredMethod("getServerName");
             name = (String) method.invoke(Bukkit.getServer());

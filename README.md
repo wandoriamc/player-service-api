@@ -32,3 +32,8 @@ PubSub-Channels
 `playerapi:login`
 `playerapi:logout`
 
+# Dev Docs
+
+The Paper implementation supports the shared connection specification v1.0.0 but is also providing a redis config
+section in the plugin config.
+

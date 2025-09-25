@@ -8,6 +8,9 @@ import it.einjojo.playerapi.util.PluginMessagePlayerConnector;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 
+/**
+ * Can be obtained by {@link PlayerApiProvider} on paper servers.
+ */
 public class PaperPlayerApi extends AbstractPlayerApi {
     private final LocalOnlinePlayerAccessor localOnlinePlayerAccessor;
     private final RedisPubSubHandler redisPubSubHandler;

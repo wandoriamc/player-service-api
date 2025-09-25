@@ -28,7 +28,7 @@ import java.util.concurrent.Executors;
 
 )
 public class VelocityPlayerApiProviderPlugin {
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final ExecutorService executor = Executors.newCachedThreadPool();
     private final ProxyServer server;
     private final Logger logger;
     private final Path dataDirectory;

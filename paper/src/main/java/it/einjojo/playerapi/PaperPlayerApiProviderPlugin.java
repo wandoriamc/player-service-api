@@ -2,6 +2,7 @@ package it.einjojo.playerapi;
 
 
 import io.grpc.ManagedChannel;
+import io.lettuce.core.RedisClient;
 import it.einjojo.playerapi.config.PluginConfig;
 import it.einjojo.playerapi.config.RedisConnectionConfiguration;
 import it.einjojo.playerapi.config.SharedConnectionConfiguration;
@@ -9,14 +10,16 @@ import it.einjojo.playerapi.listener.PaperConnectionHandler;
 import it.einjojo.playerapi.util.DefaultServerNameProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.slf4j.Logger;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
 public class PaperPlayerApiProviderPlugin extends JavaPlugin {
+    private final Logger log = getSLF4JLogger();
     public static PaperPlayerApiProviderPlugin INSTANCE;
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final ExecutorService executor = Executors.newCachedThreadPool();
     private ManagedChannel channel;
 
 
@@ -24,9 +27,25 @@ public class PaperPlayerApiProviderPlugin extends JavaPlugin {
     public void onEnable() {
         INSTANCE = this;
         PluginConfig config = PluginConfig.load(getDataPath());
-        RedisConnectionConfiguration redis = SharedConnectionConfiguration.load().map(SharedConnectionConfiguration::redis).orElseGet(config::redis);
+        var sharedConfig = SharedConnectionConfiguration.load();
+        RedisConnectionConfiguration redisConfig = sharedConfig.map(SharedConnectionConfiguration::redis).orElseGet(config::redis);
+        try (var client = RedisClient.create(redisConfig.createUri("playerapi")); var con = client.connect()) {
+            log.info("Pinging redis server {}... ", con.sync().ping());
+        } catch (Exception ex) {
+            log.error("{} | SharedConfig available: {} \n  ==> Your {} \n", ex.getMessage(), sharedConfig.isPresent(), redisConfig);
+            getSLF4JLogger().info("Disabling PlayerApi plugin.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
         channel = config.createChannel();
-        PaperPlayerApi playerApi = new PaperPlayerApi(channel, executor, redis);
+        var state = channel.getState(true);
+        log.info("gRPC channel to PlayerApi server is in state: {}", state);
+        channel.notifyWhenStateChanged(state, () -> {
+            var newState = channel.getState(true);
+            log.info("gRPC channel to PlayerApi server changed state: {}", newState);
+        });
+        PaperPlayerApi playerApi = new PaperPlayerApi(channel, executor, redisConfig);
         PlayerApiProvider.register(playerApi);
         Bukkit.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         getSLF4JLogger().info("PlayerApi Paper plugin has been initialized.");
@@ -39,6 +58,7 @@ public class PaperPlayerApiProviderPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        log.info("Shutting down.");
         if (channel != null && !channel.isShutdown()) {
             channel.shutdownNow();
             getSLF4JLogger().info("gRPC channel has been shut down.");

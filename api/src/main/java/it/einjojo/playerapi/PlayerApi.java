@@ -7,7 +7,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 /**
- * PlayerAPI
+ * PlayerAPI can be obtained by {@link PlayerApiProvider} on any platform.
  */
 public interface PlayerApi {
 
@@ -49,8 +49,20 @@ public interface PlayerApi {
 
     LocalOnlinePlayerAccessor getLocalOnlinePlayerAccessor();
 
+    /**
+     * Subscribe to all player logins
+     *
+     * @param playerConsumer the consumer that will be called when a player logs in.
+     * @return a {@link Closeable} that can be used to unsubscribe from the event.
+     */
     Closeable subscribeLogin(Consumer<NetworkPlayer> playerConsumer);
 
+    /**
+     * Subscribe to all player logouts
+     *
+     * @param offlinePlayerConsumer the consumer that will be called when a player logs out.
+     * @return a {@link Closeable} that can be used to unsubscribe from the event.
+     */
     Closeable subscribeLogout(Consumer<OfflineNetworkPlayer> offlinePlayerConsumer);
 
 }
