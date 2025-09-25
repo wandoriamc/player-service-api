@@ -2,6 +2,7 @@ plugins {
     id("java")
     id("de.eldoria.plugin-yml.paper") version "0.7.1"
     id("xyz.jpenilla.run-paper") version "2.3.1"
+
 }
 
 
@@ -10,6 +11,14 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
     compileOnly("org.jetbrains:annotations:24.0.0")
     paperLibrary("io.lettuce:lettuce-core:6.8.1.RELEASE")
+}
+
+tasks.withType(xyz.jpenilla.runtask.task.AbstractRun::class) {
+    javaLauncher = javaToolchains.launcherFor {
+        vendor = JvmVendorSpec.JETBRAINS
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+    jvmArgs("-XX:+AllowEnhancedClassRedefinition")
 }
 
 paper {
@@ -26,5 +35,8 @@ paper {
 tasks {
     runServer {
         minecraftVersion("1.21.4")
+        downloadPlugins {
+
+        }
     }
 }

@@ -53,7 +53,7 @@ public record PluginConfig(String gsonAddress, int gsonPort, RedisConnectionConf
 
     public ManagedChannel createChannel() {
         return ManagedChannelBuilder.forAddress(gsonAddress, gsonPort)
-                .usePlaintext()
+                .disableRetry()
                 .build();
     }
 

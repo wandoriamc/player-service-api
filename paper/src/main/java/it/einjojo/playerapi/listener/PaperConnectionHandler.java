@@ -8,12 +8,14 @@ import it.einjojo.protocol.player.LogoutRequest;
 import it.einjojo.protocol.player.UpdateConnectionRequest;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jspecify.annotations.NullMarked;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,12 +25,14 @@ import java.util.concurrent.Executor;
  * When the server is not running on a proxied system, the paper server should log in and log out the player.
  * This is useful for single testing servers, which require the plugin as a dependency.
  */
+@NullMarked
 public class PaperConnectionHandler implements Listener {
     private static final Logger log = LoggerFactory.getLogger(PaperConnectionHandler.class);
     private final MiniMessage miniMessage;
     private final AbstractPlayerApi playerApi;
     private final Executor executor;
     private final String serverName;
+    private final JavaPlugin plugin;
 
     /**
      * Constructor for PaperConnectionHandler.
@@ -43,12 +47,11 @@ public class PaperConnectionHandler implements Listener {
                                   Executor executor,
                                   String serverName) {
         this.playerApi = playerApi;
+        this.plugin = plugin;
         this.executor = executor;
         this.serverName = serverName;
         this.miniMessage = MiniMessage.builder()
-                .editTags(builder -> {
-                    builder.tag("prefix", Tag.inserting(MiniMessage.miniMessage().deserialize("<#818cf8>ᴘʟᴀʏᴇʀᴀᴘɪ <#eef2ff>")));
-                })
+                .editTags(builder -> builder.tag("prefix", Tag.inserting(MiniMessage.miniMessage().deserialize("<#818cf8>ᴘʟᴀʏᴇʀᴀᴘɪ</#818cf8> <#eef2ff>"))))
                 .build();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -73,7 +76,21 @@ public class PaperConnectionHandler implements Listener {
                 .setSkinTexture(skinTexture)
                 .setSkinSignature(skinSignature)
                 .build());
-        loginFuture.addListener(() -> updateServer(event.getPlayer()), executor);
+        loginFuture.addListener(() -> {
+
+            try {
+                var result = loginFuture.resultNow();
+                event.getPlayer().sendActionBar(miniMessage.deserialize("<prefix>Logged in as " + result.getPlayer().getUsername()));
+                updateServer(event.getPlayer());
+            } catch (Exception ex) {
+                log.error("Player login failed for player {}", event.getPlayer().getName(), ex);
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    event.getPlayer().sendMessage(miniMessage.deserialize("<prefix><red>Login failed: " + ex.getMessage()));
+                });
+            }
+
+
+        }, executor);
 
 
     }
@@ -85,7 +102,17 @@ public class PaperConnectionHandler implements Listener {
                 .setUniqueId(player.getUniqueId().toString())
                 .setConnectedServerName(serverName)
                 .build());
-        future.addListener(() -> player.sendActionBar(miniMessage.deserialize("<prefix>Du bist jetzt online auf " + serverName)), executor);
+        future.addListener(() -> {
+            try {
+                var result = future.resultNow();
+                player.sendActionBar(miniMessage.deserialize("<prefix>Du bist jetzt online auf " + serverName));
+            } catch (Exception e) {
+                log.error("Updating server failed for player {}", player.getName(), e);
+                player.sendActionBar(miniMessage.deserialize("<prefix><red>Server switch failed: " + e.getMessage()));
+            }
+
+
+        }, executor);
     }
 
     @EventHandler

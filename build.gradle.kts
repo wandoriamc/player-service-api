@@ -36,6 +36,7 @@ subprojects {
             archiveClassifier.set("")
             archiveBaseName.set("playerapi-${project.name}")
             relocate("io.grpc", "it.einjojo.playerapi.libs.grpc")
+            relocate("com.google.protobuf", "it.einjojo.playerapi.libs.protobuf")
             mergeServiceFiles()
         }
     }
