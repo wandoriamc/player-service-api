@@ -39,6 +39,7 @@ subprojects {
             archiveBaseName.set("playerapi-${project.name}")
             relocate("io.grpc", "it.einjojo.playerapi.libs.grpc")
             relocate("com.google.protobuf", "it.einjojo.playerapi.libs.protobuf")
+            relocate("io.lettuce", "it.einjojo.playerapi.libs.lettuce")
             mergeServiceFiles()
         }
     }

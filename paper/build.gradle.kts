@@ -8,9 +8,9 @@ plugins {
 
 dependencies {
     implementation(project(":core"))
+    implementation("io.lettuce:lettuce-core:6.8.1.RELEASE")
     compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
     compileOnly("org.jetbrains:annotations:24.0.0")
-    paperLibrary("io.lettuce:lettuce-core:6.8.1.RELEASE")
 }
 
 tasks.withType(xyz.jpenilla.runtask.task.AbstractRun::class) {
@@ -28,8 +28,6 @@ paper {
     description = "Player Service Api"
     apiVersion = "1.21"
     generateLibrariesJson = true
-    loader = "it.einjojo.playerapi.PluginLibrariesLoader"
-
 }
 
 tasks {
