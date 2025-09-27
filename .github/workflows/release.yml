@@ -38,6 +38,11 @@ jobs:
 
       - name: Get version
         uses: jannemattila/get-version-from-tag@v4
+      - name: Print version
+        run: echo "Version is ${{ steps.get-version.outputs.version }}"
+      - name: Set GITHUB_VERSION in gradle.properties
+        run: echo "GITHUB_VERSION=${{ steps.get-version.outputs.version }}" >> gradle.properties
+
 
       - name: Build with Gradle
         run: ./gradlew clean build

@@ -6,10 +6,12 @@ plugins {
     id("com.gradleup.shadow") version "9.0.0"
 }
 
+rootProject.version = properties["GITHUB_VERSION"]?.toString() ?: "1.4.0-DEV"
+
 subprojects {
 
     group = "it.einjojo.playerapi"
-    version = "1.4.0"
+    version = rootProject.version;
 
     repositories {
         mavenCentral()
@@ -43,6 +45,9 @@ subprojects {
 }
 tasks {
     shadowJar {
+        enabled = false;
+    }
+    jar {
         enabled = false;
     }
 }
