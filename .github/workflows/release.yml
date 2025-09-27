@@ -37,6 +37,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Get version
+        id: get-version
         uses: jannemattila/get-version-from-tag@v4
       - name: Print version
         run: echo "Version is ${{ steps.get-version.outputs.version }}"
