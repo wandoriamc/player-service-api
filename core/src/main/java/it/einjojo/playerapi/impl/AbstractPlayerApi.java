@@ -3,6 +3,8 @@ package it.einjojo.playerapi.impl;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Empty;
 import io.grpc.ManagedChannel;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import it.einjojo.playerapi.*;
 import it.einjojo.protocol.player.*;
 
@@ -103,7 +105,15 @@ public abstract class AbstractPlayerApi implements PlayerApi {
         CompletableFuture<Type> completableFuture = new CompletableFuture<>();
         listenableFuture.addListener(() -> {
             try {
-                completableFuture.complete(mapper.apply(listenableFuture.get()));
+                ResultType result = listenableFuture.get();
+                completableFuture.complete(mapper.apply(result));
+            } catch (StatusRuntimeException statusRuntimeException) {
+                Status status = statusRuntimeException.getStatus();
+                if (status == Status.NOT_FOUND) {
+                    completableFuture.complete(null);
+                } else {
+                    completableFuture.completeExceptionally(statusRuntimeException);
+                }
             } catch (Exception e) {
                 completableFuture.completeExceptionally(e);
             }
