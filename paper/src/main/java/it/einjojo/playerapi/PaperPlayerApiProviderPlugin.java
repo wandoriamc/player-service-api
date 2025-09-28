@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -68,6 +69,11 @@ public class PaperPlayerApiProviderPlugin extends JavaPlugin {
         log.info("Shutting down.");
         if (channel != null && !channel.isShutdown()) {
             channel.shutdownNow();
+            try {
+                channel.awaitTermination(5, TimeUnit.SECONDS); // Wait for shutdown
+            } catch (InterruptedException e) {
+                log.warn("Interrupted while waiting for gRPC channel shutdown.", e);
+            }
             getSLF4JLogger().info("gRPC channel has been shut down.");
         } else {
             getSLF4JLogger().warn("gRPC channel was already shut down or not initialized.");

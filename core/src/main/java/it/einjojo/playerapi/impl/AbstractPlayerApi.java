@@ -7,12 +7,14 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import it.einjojo.playerapi.*;
 import it.einjojo.protocol.player.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.Closeable;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -59,18 +61,21 @@ public abstract class AbstractPlayerApi implements PlayerApi {
 
     @Override
     public CompletableFuture<OfflineNetworkPlayer> getOfflinePlayer(String playerName) {
+        if (playerName == null) return CompletableFuture.completedFuture(null);
         var future = playerServiceStub.getOfflinePlayerByName(PlayerNameRequest.newBuilder().setName(playerName).build());
         return createCallback(future, PlayerMapper::readOfflineResponse);
     }
 
     @Override
     public CompletableFuture<OfflineNetworkPlayer> getOfflinePlayer(UUID playerUUID) {
+        if (playerUUID == null) return CompletableFuture.completedFuture(null);
         var future = playerServiceStub.getOfflinePlayerByUniqueId(PlayerIdRequest.newBuilder().setUniqueId(playerUUID.toString()).build());
         return createCallback(future, PlayerMapper::readOfflineResponse);
     }
 
     @Override
     public CompletableFuture<Boolean> isPlayerOnline(String playerName) {
+        if (playerName == null) return CompletableFuture.completedFuture(Boolean.FALSE);
         if (getLocalOnlinePlayerAccessor().isOnline(playerName))
             return CompletableFuture.completedFuture(Boolean.TRUE);
         return getOfflinePlayer(playerName).thenApply(OfflineNetworkPlayer::isOnline);
@@ -78,6 +83,7 @@ public abstract class AbstractPlayerApi implements PlayerApi {
 
     @Override
     public CompletableFuture<Boolean> isPlayerOnline(UUID playerUUID) {
+        if (playerUUID == null) return CompletableFuture.completedFuture(Boolean.FALSE);
         if (getLocalOnlinePlayerAccessor().isOnline(playerUUID))
             return CompletableFuture.completedFuture(Boolean.TRUE);
         return getOfflinePlayer(playerUUID).thenApply(OfflineNetworkPlayer::isOnline);
@@ -85,18 +91,21 @@ public abstract class AbstractPlayerApi implements PlayerApi {
 
     @Override
     public CompletableFuture<NetworkPlayer> getOnlinePlayer(String playerName) {
+        if (playerName == null) return CompletableFuture.completedFuture(null);
         ListenableFuture<GetOnlinePlayerResponse> future = playerServiceStub.getOnlinePlayerByName(PlayerNameRequest.newBuilder().setName(playerName).build());
         return createCallback(future, PlayerMapper::readOnlineResponse);
     }
 
     @Override
     public CompletableFuture<NetworkPlayer> getOnlinePlayer(UUID playerUUID) {
+        if (playerUUID == null) return CompletableFuture.completedFuture(null);
         ListenableFuture<GetOnlinePlayerResponse> future = playerServiceStub.getOnlinePlayerByUniqueId(PlayerIdRequest.newBuilder().setUniqueId(playerUUID.toString()).build());
         return createCallback(future, PlayerMapper::readOnlineResponse);
     }
 
     @Override
     public CompletableFuture<UUID> getUniqueId(String playerName) {
+        if (playerName == null) return CompletableFuture.completedFuture(null);
         ListenableFuture<UniqueIdLookupResponse> future = playerServiceStub.getUniqueIdByName(PlayerNameRequest.newBuilder().setName(playerName).build());
         return createCallback(future, UniqueIdLookupResponse::getUniqueId).thenApply(UUID::fromString);
     }
@@ -105,14 +114,19 @@ public abstract class AbstractPlayerApi implements PlayerApi {
         CompletableFuture<Type> completableFuture = new CompletableFuture<>();
         listenableFuture.addListener(() -> {
             try {
-                ResultType result = listenableFuture.get();
-                completableFuture.complete(mapper.apply(result));
-            } catch (StatusRuntimeException statusRuntimeException) {
-                Status status = statusRuntimeException.getStatus();
-                if (status == Status.NOT_FOUND) {
-                    completableFuture.complete(null);
+                if (listenableFuture.state() == Future.State.SUCCESS) {
+                    ResultType result = listenableFuture.get();
+                    completableFuture.complete(mapper.apply(result));
                 } else {
-                    completableFuture.completeExceptionally(statusRuntimeException);
+                    Throwable t = listenableFuture.exceptionNow();
+                    if (t instanceof StatusRuntimeException statusRuntimeException) {
+                        Status status = statusRuntimeException.getStatus();
+                        if (status.getCode() == Status.Code.NOT_FOUND) {
+                            completableFuture.complete(null);
+                            return;
+                        }
+                    }
+                    completableFuture.completeExceptionally(t);
                 }
             } catch (Exception e) {
                 completableFuture.completeExceptionally(e);
@@ -122,14 +136,14 @@ public abstract class AbstractPlayerApi implements PlayerApi {
     }
 
     @Override
-    public Closeable subscribeLogin(Consumer<NetworkPlayer> playerConsumer) {
+    public Closeable subscribeLogin(@NotNull Consumer<NetworkPlayer> playerConsumer) {
         return getRedisPubSubHandler().subscribeLogin(((notify) -> {
             playerConsumer.accept(PlayerMapper.toLocal(notify.getPlayer()));
         }));
     }
 
     @Override
-    public Closeable subscribeLogout(Consumer<OfflineNetworkPlayer> offlinePlayerConsumer) {
+    public Closeable subscribeLogout(@NotNull Consumer<OfflineNetworkPlayer> offlinePlayerConsumer) {
         return getRedisPubSubHandler().subscribeLogout(((notify) -> {
             offlinePlayerConsumer.accept(PlayerMapper.toLocal(notify.getPlayer()));
         }));

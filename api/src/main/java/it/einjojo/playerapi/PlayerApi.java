@@ -1,5 +1,7 @@
 package it.einjojo.playerapi;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.io.Closeable;
 import java.util.List;
 import java.util.UUID;
@@ -33,19 +35,19 @@ public interface PlayerApi {
      */
     void connectPlayerToServer(UUID uuid, String serviceName);
 
-    CompletableFuture<OfflineNetworkPlayer> getOfflinePlayer(String playerName);
+    CompletableFuture<@Nullable OfflineNetworkPlayer> getOfflinePlayer(String playerName);
 
-    CompletableFuture<OfflineNetworkPlayer> getOfflinePlayer(UUID playerUUID);
+    CompletableFuture<@Nullable OfflineNetworkPlayer> getOfflinePlayer(UUID playerUUID);
 
     CompletableFuture<Boolean> isPlayerOnline(String playerName);
 
     CompletableFuture<Boolean> isPlayerOnline(UUID playerUUID);
 
-    CompletableFuture<NetworkPlayer> getOnlinePlayer(String playerName);
+    CompletableFuture<@Nullable NetworkPlayer> getOnlinePlayer(String playerName);
 
-    CompletableFuture<NetworkPlayer> getOnlinePlayer(UUID playerUUID);
+    CompletableFuture<@Nullable NetworkPlayer> getOnlinePlayer(UUID playerUUID);
 
-    CompletableFuture<UUID> getUniqueId(String playerName);
+    CompletableFuture<@Nullable UUID> getUniqueId(String playerName);
 
     LocalOnlinePlayerAccessor getLocalOnlinePlayerAccessor();
 
