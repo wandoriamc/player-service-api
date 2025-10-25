@@ -6,7 +6,7 @@ plugins {
     id("com.gradleup.shadow") version "9.0.0"
 }
 
-rootProject.version = properties["GITHUB_VERSION"]?.toString() ?: "1.4.1-DEV"
+rootProject.version = properties["GITHUB_VERSION"]?.toString() ?: "1.4.2-DEV"
 
 subprojects {
 

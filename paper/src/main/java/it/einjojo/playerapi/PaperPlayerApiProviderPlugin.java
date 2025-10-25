@@ -67,23 +67,45 @@ public class PaperPlayerApiProviderPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         log.info("Shutting down.");
-        if (channel != null && !channel.isShutdown()) {
-            channel.shutdownNow();
-            try {
-                channel.awaitTermination(5, TimeUnit.SECONDS); // Wait for shutdown
-            } catch (InterruptedException e) {
-                log.warn("Interrupted while waiting for gRPC channel shutdown.", e);
-            }
-            getSLF4JLogger().info("gRPC channel has been shut down.");
-        } else {
-            getSLF4JLogger().warn("gRPC channel was already shut down or not initialized.");
-        }
+
+        // Shutdown executor first to stop new tasks
         if (!executor.isShutdown()) {
-            executor.shutdownNow();
-            getSLF4JLogger().info("Executor service has been shut down.");
+            executor.shutdown();
+            try {
+                if (!executor.awaitTermination(3, TimeUnit.SECONDS)) {
+                    log.warn("Executor did not terminate in time, forcing shutdown...");
+                    executor.shutdownNow();
+                    executor.awaitTermination(2, TimeUnit.SECONDS);
+                }
+                getSLF4JLogger().info("Executor service has been shut down.");
+            } catch (InterruptedException e) {
+                log.warn("Interrupted while waiting for executor shutdown.", e);
+                executor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
         } else {
             getSLF4JLogger().warn("Executor service was already shut down or not initialized.");
         }
 
+        // Then shutdown gRPC channel gracefully
+        if (channel != null && !channel.isShutdown()) {
+            channel.shutdown(); // Initiate graceful shutdown first
+            try {
+                if (!channel.awaitTermination(5, TimeUnit.SECONDS)) {
+                    log.warn("gRPC channel did not terminate gracefully, forcing shutdown...");
+                    channel.shutdownNow();
+                    if (!channel.awaitTermination(5, TimeUnit.SECONDS)) {
+                        log.error("gRPC channel did not terminate even after force shutdown.");
+                    }
+                }
+                getSLF4JLogger().info("gRPC channel has been shut down.");
+            } catch (InterruptedException e) {
+                log.warn("Interrupted while waiting for gRPC channel shutdown.", e);
+                channel.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+        } else {
+            getSLF4JLogger().warn("gRPC channel was already shut down or not initialized.");
+        }
     }
 }
