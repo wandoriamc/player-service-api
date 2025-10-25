@@ -6,6 +6,7 @@ import io.lettuce.core.RedisClient;
 import it.einjojo.playerapi.config.PluginConfig;
 import it.einjojo.playerapi.config.RedisConnectionConfiguration;
 import it.einjojo.playerapi.config.SharedConnectionConfiguration;
+import it.einjojo.playerapi.impl.AbstractPlayerApi;
 import it.einjojo.playerapi.listener.PaperConnectionHandler;
 import it.einjojo.playerapi.util.DefaultServerNameProvider;
 import org.bukkit.Bukkit;
@@ -46,7 +47,7 @@ public class PaperPlayerApiProviderPlugin extends JavaPlugin {
             return;
         }
 
-        channel = config.createChannel();
+        channel = config.createChannel(executor);
         var state = channel.getState(true);
         log.info("gRPC channel to PlayerApi server is in state: {}", state);
         channel.notifyWhenStateChanged(state, () -> {
@@ -66,8 +67,8 @@ public class PaperPlayerApiProviderPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        log.info("Shutting down.");
-
+        log.info("Shutting down...");
+        ((AbstractPlayerApi) PlayerApiProvider.getInstance()).shutdown();
         // Shutdown executor first to stop new tasks
         if (!executor.isShutdown()) {
             executor.shutdown();
@@ -107,5 +108,6 @@ public class PaperPlayerApiProviderPlugin extends JavaPlugin {
         } else {
             getSLF4JLogger().warn("gRPC channel was already shut down or not initialized.");
         }
+        log.info("PlayerApi Paper plugin has been disabled.");
     }
 }

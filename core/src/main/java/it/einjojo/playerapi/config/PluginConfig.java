@@ -12,6 +12,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.Executor;
 
 /**
  * Configuration for the plugin, including gRPC and Redis settings.
@@ -58,10 +59,11 @@ public record PluginConfig(String gsonAddress, int gsonPort, RedisConnectionConf
     }
 
 
-    public ManagedChannel createChannel() {
+    public ManagedChannel createChannel(Executor executor) {
         return ManagedChannelBuilder.forAddress(gsonAddress, gsonPort)
                 .disableRetry()
                 .usePlaintext()
+                .executor(executor)
                 .build();
     }
 

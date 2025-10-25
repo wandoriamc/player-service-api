@@ -11,6 +11,7 @@ import io.grpc.ManagedChannel;
 import it.einjojo.playerapi.config.PluginConfig;
 import it.einjojo.playerapi.config.RedisConnectionConfiguration;
 import it.einjojo.playerapi.config.SharedConnectionConfiguration;
+import it.einjojo.playerapi.impl.AbstractPlayerApi;
 import it.einjojo.playerapi.listener.ConnectionListener;
 import org.slf4j.Logger;
 
@@ -45,7 +46,7 @@ public class VelocityPlayerApiProviderPlugin {
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
         PluginConfig config = PluginConfig.load(dataDirectory);
-        channel = config.createChannel();
+        channel = config.createChannel(executor);
         RedisConnectionConfiguration redis = SharedConnectionConfiguration.load().map(SharedConnectionConfiguration::redis).orElseGet(config::redis);
         VelocityPlayerApi playerApi = new VelocityPlayerApi(channel, executor, server, redis);
         PlayerApiProvider.register(playerApi);
@@ -56,7 +57,7 @@ public class VelocityPlayerApiProviderPlugin {
     @Subscribe
     public void onProxyShutdown(ProxyShutdownEvent event) {
         logger.info("Shutting down.");
-
+        ((AbstractPlayerApi) PlayerApiProvider.getInstance()).shutdown();
         // Shutdown executor first to stop new tasks
         if (!executor.isShutdown()) {
             executor.shutdown();
