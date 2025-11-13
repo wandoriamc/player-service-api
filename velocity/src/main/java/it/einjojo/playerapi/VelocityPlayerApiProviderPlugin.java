@@ -79,7 +79,7 @@ public class VelocityPlayerApiProviderPlugin {
 
         // Then shutdown gRPC channel gracefully
         if (channel != null && !channel.isShutdown()) {
-            channel.shutdown(); // Initiate graceful shutdown first
+            channel.shutdown();
             try {
                 if (!channel.awaitTermination(5, TimeUnit.SECONDS)) {
                     logger.warn("gRPC channel did not terminate gracefully, forcing shutdown...");
