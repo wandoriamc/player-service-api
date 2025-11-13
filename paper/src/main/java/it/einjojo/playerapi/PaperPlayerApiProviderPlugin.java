@@ -62,10 +62,11 @@ public class PaperPlayerApiProviderPlugin extends JavaPlugin {
         getSLF4JLogger().info("PlayerApi Paper plugin has been initialized.");
         if (getServer().getOnlineMode()) {
             getSLF4JLogger().info("Detected online mode. This Server will handle authentication for players.");
-            new PaperProxylessConnectionListener(this, playerApi, executor);
+            getServer().getPluginManager().registerEvents(new PaperProxylessConnectionListener(this, playerApi, executor), this);
+            ;
         } else {
             getSLF4JLogger().info("Detected offline mode. This Server will verify players' sessions");
-            new PaperConnectionVerifyListener(log, PlayerServiceGrpc.newBlockingV2Stub(channel), this);
+            getServer().getPluginManager().registerEvents(new PaperConnectionVerifyListener(log, PlayerServiceGrpc.newBlockingV2Stub(channel), this), this);
         }
     }
 

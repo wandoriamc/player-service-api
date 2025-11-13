@@ -50,7 +50,7 @@ public class PaperProxylessConnectionListener implements Listener {
         this.miniMessage = MiniMessage.builder()
                 .editTags(builder -> builder.tag("prefix", Tag.inserting(MiniMessage.miniMessage().deserialize("<#818cf8>ᴘʟᴀʏᴇʀᴀᴘɪ</#818cf8> <#eef2ff>"))))
                 .build();
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+
     }
 
 
