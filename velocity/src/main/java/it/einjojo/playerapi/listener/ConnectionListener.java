@@ -10,6 +10,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.slf4j.Logger;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class ConnectionListener {
@@ -28,8 +29,9 @@ public class ConnectionListener {
             NetworkPlayer springPlayer = playerApi.handleLogin(player).get(3, TimeUnit.SECONDS);
             logger.info("Successfully handled login for player {}: {}", player.getUsername(), springPlayer);
         } catch (Exception e) {
-            logger.error("Failed to handle login for player {}: {}", player.getUsername(), e.getMessage(), e);
-            event.getPlayer().disconnect(Component.text("login to player service failed", NamedTextColor.RED));
+            String refId = UUID.randomUUID().toString().split("-")[0];
+            logger.error("REF:{} Failed to handle login for player {}: {}", refId, player.getUsername(), e.getMessage(), e);
+            event.getPlayer().disconnect(Component.text("login to player service failed", NamedTextColor.RED).appendNewline().append(Component.text(refId, NamedTextColor.GRAY)));
 
         }
     }
@@ -59,8 +61,9 @@ public class ConnectionListener {
                 logger.warn("Server change for player {} was not successful", event.getPlayer().getUsername());
             }
         }).exceptionally(e -> {
-            logger.error("Failed to handle server change for player {}: {}", event.getPlayer().getUsername(), e.getMessage(), e);
-            event.getPlayer().disconnect(Component.text("server change to player service failed exceptionally", NamedTextColor.RED));
+            String refId = UUID.randomUUID().toString().split("-")[0];
+            logger.error("REF:{} Failed to handle server change for player {}: {}", refId, event.getPlayer().getUsername(), e.getMessage(), e);
+            event.getPlayer().disconnect(Component.text("server change to player service failed exceptionally", NamedTextColor.RED).appendNewline().append(Component.text(refId, NamedTextColor.GRAY)));
             return null;
         });
     }

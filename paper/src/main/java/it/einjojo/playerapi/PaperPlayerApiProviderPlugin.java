@@ -7,7 +7,9 @@ import it.einjojo.playerapi.config.PluginConfig;
 import it.einjojo.playerapi.config.RedisConnectionConfiguration;
 import it.einjojo.playerapi.config.SharedConnectionConfiguration;
 import it.einjojo.playerapi.impl.AbstractPlayerApi;
+import it.einjojo.playerapi.listener.PaperConnectionVerifyListener;
 import it.einjojo.playerapi.listener.PaperProxylessConnectionListener;
+import it.einjojo.protocol.player.PlayerServiceGrpc;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.slf4j.Logger;
@@ -54,12 +56,16 @@ public class PaperPlayerApiProviderPlugin extends JavaPlugin {
             log.info("gRPC channel to PlayerApi server changed state: {}", newState);
         });
         PaperPlayerApi playerApi = new PaperPlayerApi(channel, executor, redisConfig);
+
         PlayerApiProvider.register(playerApi);
         Bukkit.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         getSLF4JLogger().info("PlayerApi Paper plugin has been initialized.");
         if (getServer().getOnlineMode()) {
             getSLF4JLogger().info("Detected online mode. This Server will handle authentication for players.");
             new PaperProxylessConnectionListener(this, playerApi, executor);
+        } else {
+            getSLF4JLogger().info("Detected offline mode. This Server will verify players' sessions");
+            new PaperConnectionVerifyListener(log, PlayerServiceGrpc.newBlockingV2Stub(channel), this);
         }
     }
 
