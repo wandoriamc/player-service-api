@@ -6,12 +6,29 @@ plugins {
     id("com.gradleup.shadow") version "9.0.0"
 }
 
-rootProject.version = properties["GITHUB_VERSION"]?.toString() ?: "1.4.3-DEV"
+
+fun String.withoutPatch(): String {
+    val parts = this.split('-', limit = 2)
+    val base = parts[0]
+    val suffix = if (parts.size > 1) "-${parts[1]}" else ""
+    val nums = base.split('.')
+    val major = nums.getOrNull(0) ?: "0"
+    val minor = nums.getOrNull(1) ?: "0"
+    return "$major.$minor$suffix"
+}
+
+val rootVer = (findProperty("GITHUB_VERSION") as String?) ?: "1.4.3-DEV"
+rootProject.version = rootVer
+extra["VERSION_WITHOUT_PATCH"] = rootVer.withoutPatch()
 
 subprojects {
-
     group = "it.einjojo.playerapi"
-    version = rootProject.version;
+    version = if (name == "api") {
+        rootProject.extra["VERSION_WITHOUT_PATCH"] as String
+    } else {
+        rootProject.version
+    }
+
 
     repositories {
         mavenCentral()
