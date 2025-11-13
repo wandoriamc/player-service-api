@@ -2,6 +2,7 @@ package it.einjojo.playerapi.listener;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import it.einjojo.playerapi.impl.AbstractPlayerApi;
+import it.einjojo.playerapi.util.InternalServerName;
 import it.einjojo.protocol.player.LoginNotify;
 import it.einjojo.protocol.player.LoginRequest;
 import it.einjojo.protocol.player.LogoutRequest;
@@ -26,30 +27,26 @@ import java.util.concurrent.Executor;
  * This is useful for single testing servers, which require the plugin as a dependency.
  */
 @NullMarked
-public class PaperConnectionHandler implements Listener {
-    private static final Logger log = LoggerFactory.getLogger(PaperConnectionHandler.class);
+public class PaperProxylessConnectionListener implements Listener {
+    private static final Logger log = LoggerFactory.getLogger(PaperProxylessConnectionListener.class);
     private final MiniMessage miniMessage;
     private final AbstractPlayerApi playerApi;
     private final Executor executor;
-    private final String serverName;
     private final JavaPlugin plugin;
 
     /**
      * Constructor for PaperConnectionHandler.
      *
-     * @param plugin     register events
-     * @param playerApi  api for login / logout operations
-     * @param executor   for grpc future callbacks
-     * @param serverName the server name where the player should be connected to.
+     * @param plugin    register events
+     * @param playerApi api for login / logout operations
+     * @param executor  for grpc future callbacks
      */
-    public PaperConnectionHandler(JavaPlugin plugin,
-                                  AbstractPlayerApi playerApi,
-                                  Executor executor,
-                                  String serverName) {
+    public PaperProxylessConnectionListener(JavaPlugin plugin,
+                                            AbstractPlayerApi playerApi,
+                                            Executor executor) {
         this.playerApi = playerApi;
         this.plugin = plugin;
         this.executor = executor;
-        this.serverName = serverName;
         this.miniMessage = MiniMessage.builder()
                 .editTags(builder -> builder.tag("prefix", Tag.inserting(MiniMessage.miniMessage().deserialize("<#818cf8>ᴘʟᴀʏᴇʀᴀᴘɪ</#818cf8> <#eef2ff>"))))
                 .build();
@@ -91,12 +88,12 @@ public class PaperConnectionHandler implements Listener {
 
 
         }, executor);
-
-
     }
+
 
     private void updateServer(Player player) {
         log.info("Successfully logged in player {}", player.getName());
+        String serverName = InternalServerName.get();
         player.sendActionBar(miniMessage.deserialize("<prefix>Angemeldet! Setze Server auf " + serverName + "..."));
         var future = playerApi.playerServiceStub.updateConnection(UpdateConnectionRequest.newBuilder()
                 .setUniqueId(player.getUniqueId().toString())
