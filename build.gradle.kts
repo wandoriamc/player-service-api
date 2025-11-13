@@ -54,7 +54,11 @@ subprojects {
         dependsOn(tasks.named("shadowJar"))
     }
 
-    if (project.name != "api" && project.name != "playerapi") {
+    if (project.name == "api" || project.name == "playerapi") {
+        tasks.named("shadowJar", ShadowJar::class) {
+            enabled = false;
+        }
+    } else {
         tasks.named("shadowJar", ShadowJar::class) {
             destinationDirectory.set(rootProject.layout.buildDirectory.dir("libs"))
             archiveClassifier.set("")

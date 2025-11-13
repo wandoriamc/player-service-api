@@ -64,13 +64,12 @@ public class UsageExample {
   config
   section in the plugin config.
 
-- Executing connection requests is done with redis pub/sub.
-  Implementation is lazy and will not be initialized until the first connection request is made.
+- Executing connection requests is done with redis pub/sub.<br/>
+  The implementation is **lazy**, and redis will not be initialized until the first connection request is made.
 
 - Obtaining Redis Connection happens in the following order:
-    1. Look in Bukkit-Service-API
-    2. Read SharedConnectionConfig (`~/connections.json`, same level as eula.txt)
-    3. Use own config (`plugins/PlayerApi/config.json`)
+    1. Read SharedConnectionConfig (`~/connections.json`, same level as eula.txt)
+    2. Use own config (`plugins/PlayerApi/config.json`)
 
 - When a player logs in, the Bukkit Player objects metadata is modified:
   (see `PaperConnectionVerifyListener.java`)
