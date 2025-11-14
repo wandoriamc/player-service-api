@@ -1,5 +1,7 @@
 package it.einjojo.playerapi;
 
+import com.google.common.base.Preconditions;
+import com.velocitypowered.api.proxy.ConnectionRequestBuilder;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.ServerConnection;
@@ -10,12 +12,19 @@ import it.einjojo.playerapi.config.RedisConnectionConfiguration;
 import it.einjojo.playerapi.impl.AbstractPlayerApi;
 import it.einjojo.playerapi.impl.PlayerMapper;
 import it.einjojo.protocol.player.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
-public class VelocityPlayerApi extends AbstractPlayerApi {
+public class VelocityPlayerApi extends AbstractPlayerApi implements Consumer<ConnectRequest> {
+    private static final String PROXY_NAME = "velocity";
+    private static final Logger log = LoggerFactory.getLogger(VelocityPlayerApi.class);
     private final LocalOnlinePlayerAccessor localOnlinePlayerAccessor;
     private final RedisPubSubHandler redisPubSubHandler;
     private final ProxyServer proxyServer;
@@ -30,7 +39,8 @@ public class VelocityPlayerApi extends AbstractPlayerApi {
         super(channel, executor);
         this.proxyServer = proxyServer;
         this.localOnlinePlayerAccessor = new VelocityLocalPlayerAccessor(proxyServer);
-        this.redisPubSubHandler = new RedisPubSubHandler(redisConnectionConfiguration);
+        this.redisPubSubHandler = new RedisPubSubHandler(redisConnectionConfiguration, executor);
+        this.redisPubSubHandler.setConnectRequestConsumer(this);
     }
 
     @Override
@@ -57,8 +67,9 @@ public class VelocityPlayerApi extends AbstractPlayerApi {
         var future = super.playerServiceStub.login(LoginRequest.newBuilder()
                 .setUniqueId(player.getUniqueId().toString())
                 .setUsername(player.getUsername())
-                .setProxyName("velocity")
-                .setSkinTexture(skinSignature)
+                .setProxyName(PROXY_NAME)
+                .setSkinTexture(skinTexture)
+                .setSkinSignature(skinSignature)
                 .build());
         return createCallback(future, (response) -> PlayerMapper.toLocal(response.getPlayer()));
     }
@@ -80,6 +91,81 @@ public class VelocityPlayerApi extends AbstractPlayerApi {
 
     @Override
     public void connectPlayerToServer(UUID uuid, String serviceName) {
+        RegisteredServer server = lookupServer(serviceName);
+        if (server == null) return;
+        Player player = proxyServer.getPlayer(uuid).orElse(null);
+        if (player == null) return;
+        player.createConnectionRequest(server).fireAndForget();
+    }
+
+    @Override
+    public CompletableFuture<ServerConnectResult> connectPlayer(UUID uuid, String serviceName) {
+        RegisteredServer server = lookupServer(serviceName);
+        if (server == null) {
+            return CompletableFuture.completedFuture(ServerConnectResult.SERVER_NOT_FOUND);
+        }
+        Player player = proxyServer.getPlayer(uuid).orElse(null);
+        if (player == null) {
+            return CompletableFuture.completedFuture(ServerConnectResult.PLAYER_NOT_FOUND);
+        }
+        return player.createConnectionRequest(server).connect().thenApply(result -> {
+            if (result.getStatus() == ConnectionRequestBuilder.Status.SUCCESS || result.getStatus() == ConnectionRequestBuilder.Status.ALREADY_CONNECTED) {
+                return ServerConnectResult.SUCCESS;
+            } else {
+                return ServerConnectResult.ERROR;
+            }
+        });
+    }
+
+    /**
+     * Passed to the redis handler
+     *
+     * @param connectRequest request, received on pub sub
+     */
+    @Override
+    public void accept(ConnectRequest connectRequest) {
+        UUID uuid = UUID.fromString(connectRequest.getUniqueId());
+        String name = connectRequest.getServerName();
+
+        connectPlayer(uuid, name)
+                .thenAccept(result -> {
+                    respondIfRequired(connectRequest, result);
+                }).exceptionally(ex -> {
+                    respondIfRequired(connectRequest, ServerConnectResult.ERROR);
+                    log.error("Failed to handle connect request for player {}", uuid, ex);
+                    return null;
+                });
+    }
+
+    /**
+     * If a request expects a response, it is sent back.
+     *
+     * @param req    the request
+     * @param result the connection result
+     */
+    private void respondIfRequired(ConnectRequest req, @NotNull ServerConnectResult result) {
+        if (!req.hasResponseKey()) {
+            return;
+        }
+        ConnectResult protoBufResult = switch (result) {
+            case SUCCESS -> ConnectResult.SUCCESS;
+            case PLAYER_NOT_FOUND -> ConnectResult.PLAYER_NOT_FOUND;
+            case SERVER_NOT_FOUND -> ConnectResult.SERVER_NOT_FOUND;
+            case ERROR -> ConnectResult.CONNECTION_ERROR;
+        };
+        ConnectResponse resp = ConnectResponse.newBuilder().setResponseKey(req.getResponseKey()).setResult(protoBufResult).build();
+        var conn = getRedisPubSubHandler().getConnection();
+        Preconditions.checkNotNull(conn, "Redis must not be null on response");
+        conn.async().publish(RedisPubSubHandler.CONNECT_RES_CHANNEL, resp.toByteArray());
+    }
+
+    /**
+     * If the server name contains a dash, it is considered a full server name, otherwise it's considered a prefix and the first result gets picked.
+     *
+     * @param serviceName the name of the server to connect to.
+     * @return the server if found, null otherwise.
+     */
+    private @Nullable RegisteredServer lookupServer(String serviceName) {
         RegisteredServer server;
         if (serviceName.contains("-")) {
             server = proxyServer.getServer(serviceName).orElse(null);
@@ -92,9 +178,6 @@ public class VelocityPlayerApi extends AbstractPlayerApi {
                 }
             }
         }
-        if (server == null) return;
-        Player player = proxyServer.getPlayer(uuid).orElse(null);
-        if (player == null) return;
-        player.createConnectionRequest(server).fireAndForget();
+        return server;
     }
 }
