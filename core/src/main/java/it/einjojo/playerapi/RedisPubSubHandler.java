@@ -12,7 +12,6 @@ import it.einjojo.protocol.player.ConnectResponse;
 import it.einjojo.protocol.player.LoginNotify;
 import it.einjojo.protocol.player.LogoutNotify;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -44,6 +43,7 @@ public class RedisPubSubHandler extends RedisPubSubAdapter<byte[], byte[]> imple
     private @Nullable Consumer<ConnectResponse> connectResponseConsumer;
     private @Nullable RedisClient client;
     private @Nullable StatefulRedisPubSubConnection<byte[], byte[]> connection;
+    private final Object connectionLock = new Object();
 
 
     /**
@@ -59,7 +59,7 @@ public class RedisPubSubHandler extends RedisPubSubAdapter<byte[], byte[]> imple
 
 
     public Closeable subscribeLogin(Consumer<LoginNotify> consumer) {
-        openConnection(connection);
+        var connection = getOpenConnection();
         if (loginNotifyConsumers == null) {
             loginNotifyConsumers = new LinkedList<>();
             connection.sync().subscribe(LOGIN_NOTIFY_CHANNEL);
@@ -72,7 +72,7 @@ public class RedisPubSubHandler extends RedisPubSubAdapter<byte[], byte[]> imple
 
 
     public Closeable subscribeLogout(Consumer<LogoutNotify> consumer) {
-        openConnection(connection);
+        var connection = getOpenConnection();
         if (logoutNotifyConsumers == null) {
             logoutNotifyConsumers = new LinkedList<>();
             connection.sync().subscribe(LOGOUT_NOTIFY_CHANNEL);
@@ -85,7 +85,7 @@ public class RedisPubSubHandler extends RedisPubSubAdapter<byte[], byte[]> imple
 
     @ApiStatus.Internal
     protected void setConnectRequestConsumer(Consumer<ConnectRequest> consumer) {
-        openConnection(connection);
+        var connection = getOpenConnection();
         if (connectRequestConsumer == null) {
             connection.sync().subscribe(CONNECT_REQ_CHANNEL);
             log.info("Subscribed to connect request channel");
@@ -95,7 +95,7 @@ public class RedisPubSubHandler extends RedisPubSubAdapter<byte[], byte[]> imple
 
     @ApiStatus.Internal
     protected void setConnectResponseConsumer(Consumer<ConnectResponse> consumer) {
-        openConnection(connection);
+        var connection = getOpenConnection();
         if (connectResponseConsumer == null) {
             connection.sync().subscribe(CONNECT_RES_CHANNEL);
             log.info("Subscribed to connect response channel");
@@ -103,18 +103,25 @@ public class RedisPubSubHandler extends RedisPubSubAdapter<byte[], byte[]> imple
         connectResponseConsumer = consumer;
     }
 
-    @Contract(value = "null -> fail;") // ide null-warning workaround
-    private void openConnection(StatefulRedisPubSubConnection<byte[], byte[]> connection) {
-        if (client == null) {
-            client = RedisClient.create(redisUri);
-            log.info("Created redis client");
-        }
+    public @NotNull StatefulRedisPubSubConnection<byte[], byte[]> getOpenConnection() {
+
         if (connection != null) {
-            return;
+            return connection;
         }
-        this.connection = client.connectPubSub(ByteArrayCodec.INSTANCE);
-        this.connection.addListener(this);
+
+        synchronized (connectionLock) {
+            if (connection == null) {
+                if (client == null) {
+                    client = RedisClient.create(redisUri);
+                    log.info("Created redis client");
+                }
+                this.connection = client.connectPubSub(ByteArrayCodec.INSTANCE);
+                this.connection.addListener(this);
+            }
+        }
+
         log.info("Opened connection to redis pub sub");
+        return connection;
     }
 
     @Override
