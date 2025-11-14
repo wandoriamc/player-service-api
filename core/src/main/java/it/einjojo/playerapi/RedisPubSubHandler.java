@@ -165,16 +165,16 @@ public class RedisPubSubHandler extends RedisPubSubAdapter<byte[], byte[]> imple
             }
         } else if (connectResponseConsumer != null && Arrays.equals(channel, CONNECT_RES_CHANNEL)) {
             try {
-                ConnectRequest connectRequest = ConnectRequest.parseFrom(message);
+                ConnectResponse connectResponse = ConnectResponse.parseFrom(message);
                 executor.execute(() -> {
                     try {
-                        connectRequestConsumer.accept(connectRequest);
+                        connectResponseConsumer.accept(connectResponse);
                     } catch (Exception e) {
                         log.error("Exception during connect response consumer processing", e);
                     }
                 });
             } catch (InvalidProtocolBufferException e) {
-                log.error("Failed to parse ConnectRequest message", e);
+                log.error("Failed to parse ConnectResponse message", e);
             }
         }
     }
