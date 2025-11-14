@@ -126,6 +126,7 @@ public class VelocityPlayerApi extends AbstractPlayerApi implements Consumer<Con
     public void accept(ConnectRequest connectRequest) {
         UUID uuid = UUID.fromString(connectRequest.getUniqueId());
         String name = connectRequest.getServerName();
+
         connectPlayer(uuid, name)
                 .thenAccept(result -> {
                     respondIfRequired(connectRequest, result);

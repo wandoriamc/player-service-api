@@ -84,7 +84,7 @@ public class RedisPubSubHandler extends RedisPubSubAdapter<byte[], byte[]> imple
     }
 
     @ApiStatus.Internal
-    public void setConnectRequestConsumer(Consumer<ConnectRequest> consumer) {
+    protected void setConnectRequestConsumer(Consumer<ConnectRequest> consumer) {
         openConnection(connection);
         if (connectRequestConsumer == null) {
             connection.sync().subscribe(CONNECT_REQ_CHANNEL);
@@ -94,7 +94,7 @@ public class RedisPubSubHandler extends RedisPubSubAdapter<byte[], byte[]> imple
     }
 
     @ApiStatus.Internal
-    public void setConnectResponseConsumer(Consumer<ConnectResponse> consumer) {
+    protected void setConnectResponseConsumer(Consumer<ConnectResponse> consumer) {
         openConnection(connection);
         if (connectResponseConsumer == null) {
             connection.sync().subscribe(CONNECT_RES_CHANNEL);

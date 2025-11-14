@@ -3,10 +3,11 @@ package it.einjojo.playerapi;
 import io.grpc.ManagedChannel;
 import it.einjojo.playerapi.config.RedisConnectionConfiguration;
 import it.einjojo.playerapi.impl.AbstractPlayerApi;
-import it.einjojo.playerapi.util.PluginMessagePlayerConnector;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 /**
@@ -16,6 +17,7 @@ import java.util.concurrent.Executor;
 public class PaperPlayerApi extends AbstractPlayerApi {
     private final LocalOnlinePlayerAccessor localOnlinePlayerAccessor;
     private final RedisPubSubHandler redisPubSubHandler;
+    private @Nullable ConnectionRequestManager connectionRequestManager;
 
 
     /**
@@ -42,7 +44,19 @@ public class PaperPlayerApi extends AbstractPlayerApi {
     }
 
     @Override
+    public CompletableFuture<ServerConnectResult> connectPlayer(UUID uuid, String serviceName) {
+        return getConnectionRequestManager().newRequest(uuid, serviceName);
+    }
+
+    public ConnectionRequestManager getConnectionRequestManager() {
+        if (connectionRequestManager == null) {
+            connectionRequestManager = new ConnectionRequestManager(getRedisPubSubHandler());
+        }
+        return connectionRequestManager;
+    }
+
+    @Override
     public void connectPlayerToServer(UUID uuid, String serviceName) {
-        PluginMessagePlayerConnector.getInstance().connectPlayerToServer(uuid, serviceName);
+        getConnectionRequestManager().fireAndForget(uuid, serviceName);
     }
 }
