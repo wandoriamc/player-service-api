@@ -59,7 +59,7 @@ public class ConnectionRequestManager implements Consumer<ConnectResponse> {
     }
 
     public CompletableFuture<ServerConnectResult> newRequest(UUID uuid, String serviceName) {
-        int responseKey = random.nextInt();
+        int responseKey = random.nextInt(Integer.MAX_VALUE);
         CompletableFuture<ServerConnectResult> future = new CompletableFuture<>();
         pendingRequests.put(responseKey, future);
         connection.sync().publish(RedisPubSubHandler.CONNECT_REQ_CHANNEL, ConnectRequest.newBuilder()
