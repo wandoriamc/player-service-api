@@ -115,7 +115,11 @@ message LogoutNotify {
   OfflinePlayerDefinition player = 3;
 }
 
-// Added in v1.4.4
+/*
+ Added in v1.4.4 and only api related | no need for service implementation
+*/
+
+
 // Game --redis-> Proxy
 message ConnectRequest {
   string unique_id = 1; // the unique-id of the player to connect
@@ -125,6 +129,14 @@ message ConnectRequest {
 
 // Game --redis--> Proxy
 message ConnectResponse {
-  bool success = 1; // whether the connection was successful
+  ConnectResult result = 1; // the result of the connection attempt
   int32 response_key = 2; // If set, the proxy will respond with a ConnectResponse
+}
+
+// Possible results for ConnectResponse
+enum ConnectResult {
+  SUCCESS = 0; // no failure
+  SERVER_NOT_FOUND = 1; // the target server was not found
+  CONNECTION_ERROR = 2; // there was a connection error
+  PLAYER_NOT_FOUND = 3; // the player was not found on the proxy
 }

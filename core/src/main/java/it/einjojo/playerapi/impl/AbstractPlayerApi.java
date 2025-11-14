@@ -153,7 +153,6 @@ public abstract class AbstractPlayerApi implements PlayerApi {
 
     public abstract LocalOnlinePlayerAccessor getLocalOnlinePlayerAccessor();
 
-    public abstract void connectPlayerToServer(UUID uuid, String serviceName);
 
     /**
      * Closes internal resources.

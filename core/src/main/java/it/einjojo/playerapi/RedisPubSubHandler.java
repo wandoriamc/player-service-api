@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
 /**
@@ -32,10 +31,10 @@ import java.util.function.Consumer;
  * <p>Listens to playerapi:login and playerapi:logout channels and dispatch the received protobuf messages to the provided consumers.</p>
  */
 public class RedisPubSubHandler extends RedisPubSubAdapter<byte[], byte[]> implements Closeable {
-    private static final byte[] LOGIN_NOTIFY_CHANNEL = "plapi:li".getBytes();
-    private static final byte[] LOGOUT_NOTIFY_CHANNEL = "plapi:lo".getBytes();
-    private static final byte[] CONNECT_REQ_CHANNEL = "plapi:co".getBytes();
-    private static final byte[] CONNECT_RES_CHANNEL = "plapi:rco".getBytes();
+    protected static final byte[] LOGIN_NOTIFY_CHANNEL = "plapi:li".getBytes();
+    protected static final byte[] LOGOUT_NOTIFY_CHANNEL = "plapi:lo".getBytes();
+    protected static final byte[] CONNECT_REQ_CHANNEL = "plapi:co".getBytes();
+    protected static final byte[] CONNECT_RES_CHANNEL = "plapi:rco".getBytes();
     private static final Logger log = LoggerFactory.getLogger(RedisPubSubHandler.class);
     private final RedisURI redisUri;
     private final Executor executor;
@@ -178,6 +177,14 @@ public class RedisPubSubHandler extends RedisPubSubAdapter<byte[], byte[]> imple
                 log.error("Failed to parse ConnectRequest message", e);
             }
         }
+    }
+
+    public @Nullable RedisClient getClient() {
+        return client;
+    }
+
+    public @Nullable StatefulRedisPubSubConnection<byte[], byte[]> getConnection() {
+        return connection;
     }
 
     @Override

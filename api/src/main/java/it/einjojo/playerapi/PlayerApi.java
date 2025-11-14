@@ -32,8 +32,20 @@ public interface PlayerApi {
      *
      * @param uuid        the player's UUID
      * @param serviceName the name of the server to connect to. If the string does not contain a separator ('-'), it connects to a random server of the group.
+     * @return a future
      */
-    void connectPlayerToServer(UUID uuid, String serviceName);
+    CompletableFuture<ServerConnectResult> connectPlayer(UUID uuid, String serviceName);
+
+    /**
+     * Fire and forget
+     *
+     * @param uuid        player
+     * @param serviceName server
+     * @see #connectPlayer(UUID, String)
+     */
+    default void connectPlayerToServer(UUID uuid, String serviceName) {
+        connectPlayer(uuid, serviceName);
+    }
 
     CompletableFuture<@Nullable OfflineNetworkPlayer> getOfflinePlayer(String playerName);
 
