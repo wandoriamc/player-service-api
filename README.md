@@ -35,8 +35,8 @@ repositories {
 }
 
 dependencies {
-    // Dependency must use the MAJOR.MINOR version (1.4, not 1.4.3)
-    compileOnly("it.einjojo.playerapi:api:1.4")
+    // Dependency must use the MAJOR.MINOR version (1.5, not 1.5.0)
+    compileOnly("it.einjojo.playerapi:api:1.5")
 }
 ```
 
