@@ -30,9 +30,9 @@ public class ConnectionRequestManager implements Consumer<ConnectResponse> {
     }
 
     /**
-     * callback
+     * Callback invoked when a connection response is received.
      *
-     * @param connectResponse
+     * @param connectResponse the response to a connection request
      */
     @Override
     public void accept(ConnectResponse connectResponse) {
