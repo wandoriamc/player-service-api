@@ -27,7 +27,7 @@ public class PaperPlayerApi extends AbstractPlayerApi {
     public PaperPlayerApi(ManagedChannel channel, Executor executor, RedisConnectionConfiguration redisConnectionConfiguration) {
         super(channel, executor);
         this.localOnlinePlayerAccessor = new PaperLocalPlayerAccessor();
-        this.redisPubSubHandler = new RedisPubSubHandler(redisConnectionConfiguration);
+        this.redisPubSubHandler = new RedisPubSubHandler(redisConnectionConfiguration, executor);
 
     }
 

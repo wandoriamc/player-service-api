@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
-@Deprecated
+@Deprecated(forRemoval = true)
 public class PluginMessagePlayerConnector {
     private static final PluginMessagePlayerConnector INSTANCE = new PluginMessagePlayerConnector();
     private static final Logger log = LoggerFactory.getLogger(PluginMessagePlayerConnector.class);

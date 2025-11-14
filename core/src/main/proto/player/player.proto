@@ -76,15 +76,19 @@ message GetOfflinePlayerResponse {
   OfflinePlayerDefinition player = 1;
 }
 
+// Player has switched servers | Proxy -> Service
 message UpdateConnectionRequest {
   string unique_id = 1;
   string connected_server_name = 2;
 }
 
+
+// Service -> Proxy, response to UpdateConnectionRequest
 message UpdateConnectionResponse {
   bool success = 1;
 }
 
+// Proxy -> Service, when a player logs in
 message LoginRequest {
   string unique_id = 1;
   string username = 2;
@@ -93,18 +97,34 @@ message LoginRequest {
   string skin_signature = 5;
 }
 
+// Dispatched by Service when a player has logged in
 message LoginNotify {
   OnlinePlayerDefinition player = 1;
   uint64 timestamp = 2;
 }
 
+// Proxy -> Service, when a player quits
 message LogoutRequest {
   string unique_id = 1;
 }
 
+// Dispatched by Service when a player has been logged out
 message LogoutNotify {
   bool success = 1;
   int64 closed_session_id = 2;
   OfflinePlayerDefinition player = 3;
 }
 
+// Added in v1.4.4
+// Game --redis-> Proxy
+message ConnectRequest {
+  string unique_id = 1; // the unique-id of the player to connect
+  string server_name = 2; // the server-name to connect to
+  optional int32 response_key = 3; // If set, the proxy will respond with a ConnectResponse
+}
+
+// Game --redis--> Proxy
+message ConnectResponse {
+  bool success = 1; // whether the connection was successful
+  int32 response_key = 2; // If set, the proxy will respond with a ConnectResponse
+}
