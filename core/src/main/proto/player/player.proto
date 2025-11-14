@@ -130,7 +130,7 @@ message ConnectRequest {
 // Game --redis--> Proxy
 message ConnectResponse {
   ConnectResult result = 1; // the result of the connection attempt
-  int32 response_key = 2; // If set, the proxy will respond with a ConnectResponse
+  int32 response_key = 2; // Used by the requester to match responses with their corresponding requests
 }
 
 // Possible results for ConnectResponse
