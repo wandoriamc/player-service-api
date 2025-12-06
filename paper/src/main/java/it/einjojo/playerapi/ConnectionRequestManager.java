@@ -89,7 +89,9 @@ public class ConnectionRequestManager implements Consumer<ConnectResponse> {
                 .setServerName(serviceName)
                 .setResponseKey(responseKey)
                 .build().toByteArray());
-        return future.orTimeout(10, TimeUnit.SECONDS).whenComplete((result, throwable) -> pendingRequests.remove(responseKey));
+        // Ensure we remove the matching PendingRequest (by responseKey) when the future completes
+        return future.orTimeout(10, TimeUnit.SECONDS)
+                .whenComplete((result, throwable) -> pendingRequests.removeIf(p -> p.responseKey == responseKey));
 
 
     }

@@ -130,8 +130,11 @@ public class RedisPubSubHandler extends RedisPubSubAdapter<byte[], byte[]> imple
         if (loginNotifyConsumers != null && Arrays.equals(channel, LOGIN_NOTIFY_CHANNEL)) {
             try {
                 LoginNotify notify = LoginNotify.parseFrom(message);
+                // capture the list reference to avoid races where the field is cleared while the runnable is queued
+                var consumers = loginNotifyConsumers;
+                if (consumers == null) return;
                 executor.execute(() -> {
-                    for (Consumer<LoginNotify> consumer : loginNotifyConsumers) {
+                    for (Consumer<LoginNotify> consumer : consumers) {
                         try {
                             consumer.accept(notify);
                         } catch (Exception e) {
@@ -145,8 +148,10 @@ public class RedisPubSubHandler extends RedisPubSubAdapter<byte[], byte[]> imple
         } else if (logoutNotifyConsumers != null && Arrays.equals(channel, LOGOUT_NOTIFY_CHANNEL)) {
             try {
                 LogoutNotify logoutNotify = LogoutNotify.parseFrom(message);
+                var consumers = logoutNotifyConsumers;
+                if (consumers == null) return;
                 executor.execute(() -> {
-                    for (Consumer<LogoutNotify> consumer : logoutNotifyConsumers) {
+                    for (Consumer<LogoutNotify> consumer : consumers) {
                         try {
                             consumer.accept(logoutNotify);
                         } catch (Exception e) {
@@ -160,9 +165,11 @@ public class RedisPubSubHandler extends RedisPubSubAdapter<byte[], byte[]> imple
         } else if (connectRequestConsumer != null && Arrays.equals(channel, CONNECT_REQ_CHANNEL)) {
             try {
                 ConnectRequest connectRequest = ConnectRequest.parseFrom(message);
+                var consumer = connectRequestConsumer;
+                if (consumer == null) return;
                 executor.execute(() -> {
                     try {
-                        connectRequestConsumer.accept(connectRequest);
+                        consumer.accept(connectRequest);
                     } catch (Exception ex) {
                         log.error("Exception during connect request consumer processing", ex);
                     }
@@ -173,9 +180,11 @@ public class RedisPubSubHandler extends RedisPubSubAdapter<byte[], byte[]> imple
         } else if (connectResponseConsumer != null && Arrays.equals(channel, CONNECT_RES_CHANNEL)) {
             try {
                 ConnectResponse connectResponse = ConnectResponse.parseFrom(message);
+                var consumer = connectResponseConsumer;
+                if (consumer == null) return;
                 executor.execute(() -> {
                     try {
-                        connectResponseConsumer.accept(connectResponse);
+                        consumer.accept(connectResponse);
                     } catch (Exception e) {
                         log.error("Exception during connect response consumer processing", e);
                     }
