@@ -11,7 +11,6 @@ public class OfflineNetworkPlayerImpl implements OfflineNetworkPlayer {
     private final long lastPlayed;
     private final long playtime;
     private final boolean online;
-    private final long retrievalTime;
 
     public OfflineNetworkPlayerImpl(UUID uniqueId, String name, long firstPlayed, long lastPlayed, long playtime, boolean online) {
         this.uniqueId = uniqueId;
@@ -20,7 +19,6 @@ public class OfflineNetworkPlayerImpl implements OfflineNetworkPlayer {
         this.lastPlayed = lastPlayed;
         this.playtime = playtime;
         this.online = online;
-        this.retrievalTime = System.currentTimeMillis();
     }
 
 
@@ -54,9 +52,6 @@ public class OfflineNetworkPlayerImpl implements OfflineNetworkPlayer {
         return playtime;
     }
 
-    public long getRetrievalTime() {
-        return retrievalTime;
-    }
 
 
 }

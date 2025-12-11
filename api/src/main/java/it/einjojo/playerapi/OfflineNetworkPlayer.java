@@ -14,10 +14,26 @@ public interface OfflineNetworkPlayer {
 
     boolean isOnline();
 
+    /**
+     * timestamp
+     *
+     * @return milliseconds since 1970-01-01
+     */
     long getFirstPlayed();
 
+    /**
+     * Timestamp
+     *
+     * @return milliseconds since 1970-01-01
+     */
     long getLastPlayed();
 
+    /**
+     * Playtime
+     *
+     * @return accumulated playtime in milliseconds.
+     * @see NetworkPlayer#getSessionTime()
+     */
     long getPlaytime();
 
 

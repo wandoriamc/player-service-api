@@ -41,6 +41,7 @@ message OfflinePlayerDefinition {
   string username = 2;
   int64 first_login = 3;
   int64 last_login = 4;
+  // playtime millis
   int64 online_time = 5;
   bool online = 6;
 }
@@ -62,6 +63,7 @@ message OnlinePlayerDefinition {
   string username = 2;
   int64 first_login = 3;
   int64 last_login = 4;
+  // playtime millis
   int64 online_time = 5;
   string connected_server_name = 6;
   string connected_proxy_name = 7;
