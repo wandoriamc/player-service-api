@@ -17,7 +17,7 @@ fun String.withoutPatch(): String {
     return "$major.$minor$suffix"
 }
 
-val rootVer = (findProperty("GITHUB_VERSION") as String?) ?: "1.5.0-DEV"
+val rootVer = (findProperty("GITHUB_VERSION") as String?) ?: "1.5.0"
 rootProject.version = rootVer
 extra["VERSION_WITHOUT_PATCH"] = rootVer.withoutPatch()
 

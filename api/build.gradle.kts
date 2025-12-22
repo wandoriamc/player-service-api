@@ -17,7 +17,7 @@ publishing {
             pom {
                 name.set("playerapi")
                 description.set("manage players")
-                url.set("https://einjojo.it/work/springx")
+                url.set("https://einjojo.it/")
 
 
                 // Füge Entwicklerinformationen hinzu
