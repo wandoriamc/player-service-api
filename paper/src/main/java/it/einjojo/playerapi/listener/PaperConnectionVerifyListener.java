@@ -55,10 +55,11 @@ public class PaperConnectionVerifyListener implements Listener {
         try {
             GetOnlinePlayerResponse response = blockingService.getOnlinePlayerByUniqueId(PlayerIdRequest.newBuilder().setUniqueId(event.getUniqueId().toString()).build());
             OnlinePlayerDefinition onlinePlayerDefinition = response.getPlayer();
+            // add to queue to be processed at the next stage where an instance of bukkit Player is available
             metaWriterQueue.add(new MetadataWriter(onlinePlayerDefinition, System.currentTimeMillis() + WRITER_TTL, plugin));
         } catch (Exception ex) {
             String refId = UUID.randomUUID().toString().split("-")[0];
-            logger.error("Ref:{} Could not verify session for {}", refId, event.getUniqueId());
+            logger.error("Ref:{} Could not verify session for {}", refId, event.getUniqueId(), ex);
             event.kickMessage(Component.text("player-service verification failure: No session found ", NamedTextColor.RED).append(Component.text(refId, NamedTextColor.GRAY)));
             event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
         }
@@ -66,6 +67,7 @@ public class PaperConnectionVerifyListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void writeMetadata(PlayerJoinEvent event) {
+        // take the fetched meta data from prelogin event and apply it to the player
         for (int i = 0; i < metaWriterQueue.size(); i++) {
             MetadataWriter writer = metaWriterQueue.poll();
             if (writer == null) {
