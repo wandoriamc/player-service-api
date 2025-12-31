@@ -1,8 +1,7 @@
 name: Release
 
 on:
-  release:
-    types: [ created ]
+  push:
 
 permissions:
   contents: write
@@ -10,7 +9,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest  
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         java: [ 21 ]
@@ -18,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout Git Repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: JDK ${{ matrix.java }}
         uses: actions/setup-java@v4.7.1
@@ -26,30 +25,17 @@ jobs:
           java-version: ${{ matrix.java }}
           cache: 'gradle'
           distribution: 'temurin'
-
       - name: Validate Gradle Wrapper
         uses: gradle/actions/wrapper-validation@v4
-
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-
-      - name: Get version
-        id: get-version
-        uses: jannemattila/get-version-from-tag@v4
-      - name: Print version
-        run: echo "Version is ${{ steps.get-version.outputs.version }}"
-      - name: Set GITHUB_VERSION in gradle.properties
-        run: echo "GITHUB_VERSION=${{ steps.get-version.outputs.version }}" >> gradle.properties
-
-
       - name: Build with Gradle
         run: ./gradlew clean build
-
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2.0.9
+        if: github.ref_type == 'tag'
         with:
           files: |
             build/libs/*.jar
