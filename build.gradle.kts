@@ -4,7 +4,9 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     id("java")
     id("com.gradleup.shadow") version "9.0.0"
+    id("me.qoomon.git-versioning") version "6.4.4"
 }
+
 
 
 fun String.withoutPatch(): String {
@@ -17,18 +19,33 @@ fun String.withoutPatch(): String {
     return "$major.$minor$suffix"
 }
 
-val rootVer = (findProperty("GITHUB_VERSION") as String?) ?: "1.5.0"
-rootProject.version = rootVer
-extra["VERSION_WITHOUT_PATCH"] = rootVer.withoutPatch()
+rootProject.version = version
+extra["VERSION_WITHOUT_PATCH"] = rootProject.version.toString().withoutPatch()
 
 subprojects {
+    apply(plugin = "java-library")
+    apply(plugin = "com.gradleup.shadow")
+    apply(plugin = "me.qoomon.git-versioning")
     group = "it.einjojo.playerapi"
-    version = if (name == "api") {
-        rootProject.extra["VERSION_WITHOUT_PATCH"] as String
-    } else {
-        rootProject.version
+    version = "1.6.0"
+    gitVersioning.apply {
+        refs {
+            tag("v(?<version>.*)") {
+                version = if (name == "api") {
+                    "\${ref.version.major}.\${ref.version.minor}"
+                } else {
+                    "\${ref.version}"
+                }
+            }
+        }
+        rev {
+            version = if (name == "api") {
+                "\${version.major}.\${version.minor}-\${commit.short}"
+            } else {
+                "\${version}-\${commit.short}"
+            }
+        }
     }
-
 
     repositories {
         mavenCentral()
@@ -36,8 +53,7 @@ subprojects {
     }
 
 
-    apply(plugin = "java-library")
-    apply(plugin = "com.gradleup.shadow")
+
 
     dependencies {
         compileOnly("org.jetbrains:annotations:26.0.2-1")

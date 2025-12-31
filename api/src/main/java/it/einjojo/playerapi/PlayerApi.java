@@ -3,6 +3,7 @@ package it.einjojo.playerapi;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Closeable;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -80,5 +81,25 @@ public interface PlayerApi {
      * @return a {@link Closeable} that can be used to unsubscribe from the event.
      */
     Closeable subscribeLogout(Consumer<OfflineNetworkPlayer> offlinePlayerConsumer);
+
+    /**
+     * Used to tab complete offline player names.
+     *
+     * @param input the input
+     * @return a collection of offline players matching the input
+     * @see #tabCompleteOfflinePlayers(String, UUID)
+     * @since 1.6
+     */
+    CompletableFuture<Collection<OfflineNetworkPlayer>> tabCompleteOfflinePlayersGeneric(String input);
+
+    /**
+     * Used to tab complete offline player names, with respect to the permissions of the tabCompleter
+     *
+     * @param input        the input
+     * @param tabCompleter uuid of the player requesting the tab completion
+     * @return a collection of offline players matching the input
+     * @since 1.6
+     */
+    CompletableFuture<Collection<OfflineNetworkPlayer>> tabCompleteOfflinePlayers(String input, UUID tabCompleter);
 
 }

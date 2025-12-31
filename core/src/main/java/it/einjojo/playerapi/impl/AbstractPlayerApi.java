@@ -10,6 +10,7 @@ import it.einjojo.protocol.player.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Closeable;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -36,6 +37,16 @@ public abstract class AbstractPlayerApi implements PlayerApi {
     public AbstractPlayerApi(ManagedChannel channel, Executor executor) {
         this.playerServiceStub = PlayerServiceGrpc.newFutureStub(channel);
         this.executor = executor;
+    }
+
+    @Override
+    public CompletableFuture<Collection<OfflineNetworkPlayer>> tabCompleteOfflinePlayersGeneric(String input) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<Collection<OfflineNetworkPlayer>> tabCompleteOfflinePlayers(String input, UUID tabCompleter) {
+        return null;
     }
 
     private static List<NetworkPlayer> extractOnlinePlayers(GetOnlinePlayersResponse response) {
