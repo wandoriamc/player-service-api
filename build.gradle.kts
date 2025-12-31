@@ -14,10 +14,11 @@ subprojects {
     apply(plugin = "me.qoomon.git-versioning")
     group = "it.einjojo"
     version = rootProject.version
+    extra["tagged"] = false
     gitVersioning.apply {
         refs {
             tag("v(?<version>.*)") {
-                setProperty("release", true) // for indicating a release build.
+                extra["tagged"] = true
                 version = if (name == "api") {
                     "\${ref.version.major}.\${ref.version.minor}"
                 } else {
