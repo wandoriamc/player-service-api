@@ -27,7 +27,7 @@ subprojects {
     apply(plugin = "com.gradleup.shadow")
     apply(plugin = "me.qoomon.git-versioning")
     group = "it.einjojo.playerapi"
-    version = "1.5.0"
+    version = "1.5.3"
     gitVersioning.apply {
         refs {
             tag("v(?<version>.*)") {
