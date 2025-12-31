@@ -10,38 +10,23 @@ Currently implemented on paper and velocity.
 
 To use the api locally, follow these steps to clone the specific version and publish it to your local Maven repository.
 
-### 1. Build and Publish
 
-Execute these commands sequentially to prepare the API library:
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/wandoriamc/player-service-api.git
-cd player-service-api
-
-# 2. Build and install the API to your local Maven cache (~/.m2/repository)
-./gradlew publishToMavenLocal
-```
-
-### 2. Project Dependency (Your `build.gradle.kts`)
-
-When adding the dependency to **your project**, you **must omit the patch version** (`Major.Minor.Patch`) as required.
-
+### Use it.
 ```kotlin
 // build.gradle.kts
 repositories {
-    // REQUIRED: Allows Gradle to find the library in your local cache
-    mavenLocal()
+    maven("https://repo.einjojo.it/releases")
+    maven("https://repo.einjojo.it/snapshots")
 }
 
 dependencies {
     // Dependency must use the MAJOR.MINOR version (1.5, not 1.5.0)
-    compileOnly("it.einjojo.playerapi:api:1.5")
+    compileOnly("it.einjojo.playerapi:api:1.5") // to be updated in the future
+    
+  // for snapshots use:
+    compileOnly("it.einjojo:playerapi:1.5-6da76b7")
 }
 ```
-
-### 3. Use it.
-
 ```java
 public class UsageExample {
     static {
