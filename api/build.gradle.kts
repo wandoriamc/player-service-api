@@ -37,7 +37,7 @@ publishing {
         maven {
             val snapshotsUri = uri("https://repo.einjojo.it/snapshots")
             val releasesUri = uri("https://repo.einjojo.it/snapshots")
-            url = if (project.hasProperty("release")) snapshotsUri else releasesUri;
+            url = if (project.hasProperty("release")) releasesUri else snapshotsUri;
             credentials {
                 username = System.getenv("REPO_USERNAME")
                 password = System.getenv("REPO_PASSWORD")

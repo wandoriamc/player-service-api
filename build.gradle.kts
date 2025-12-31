@@ -17,6 +17,7 @@ subprojects {
     gitVersioning.apply {
         refs {
             tag("v(?<version>.*)") {
+                setProperty("release", true) // for indicating a release build.
                 version = if (name == "api") {
                     "\${ref.version.major}.\${ref.version.minor}"
                 } else {
