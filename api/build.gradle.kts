@@ -1,5 +1,6 @@
 plugins {
     id("maven-publish")
+    signing
 }
 
 
@@ -14,6 +15,7 @@ publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
+            artifactId = "playerapi"
             pom {
                 name.set("playerapi")
                 description.set("manage players")
@@ -33,8 +35,9 @@ publishing {
     }
     repositories {
         maven {
-            name = "einjojoReleases"
-            url = uri("https://repo.einjojo.it/releases")
+            val snapshotsUri = uri("https://repo.einjojo.it/snapshots")
+            val releasesUri = uri("https://repo.einjojo.it/snapshots")
+            url = if (project.hasProperty("release")) snapshotsUri else releasesUri;
             credentials {
                 username = System.getenv("REPO_USERNAME")
                 password = System.getenv("REPO_PASSWORD")
@@ -44,4 +47,7 @@ publishing {
             }
         }
     }
+}
+signing {
+    sign(publishing.publications["mavenJava"])
 }

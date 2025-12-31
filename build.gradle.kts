@@ -7,27 +7,13 @@ plugins {
     id("me.qoomon.git-versioning") version "6.4.4"
 }
 
-
-
-fun String.withoutPatch(): String {
-    val parts = this.split('-', limit = 2)
-    val base = parts[0]
-    val suffix = if (parts.size > 1) "-${parts[1]}" else ""
-    val nums = base.split('.')
-    val major = nums.getOrNull(0) ?: "0"
-    val minor = nums.getOrNull(1) ?: "0"
-    return "$major.$minor$suffix"
-}
-
-rootProject.version = version
-extra["VERSION_WITHOUT_PATCH"] = rootProject.version.toString().withoutPatch()
-
+version = "1.5.3"
 subprojects {
     apply(plugin = "java-library")
     apply(plugin = "com.gradleup.shadow")
     apply(plugin = "me.qoomon.git-versioning")
-    group = "it.einjojo.playerapi"
-    version = "1.5.3"
+    group = "it.einjojo"
+    version = rootProject.version
     gitVersioning.apply {
         refs {
             tag("v(?<version>.*)") {
@@ -74,7 +60,7 @@ subprojects {
         tasks.named("shadowJar", ShadowJar::class) {
             enabled = false;
         }
-    } else if (project.name == "velocity" || project.name == "paper"){
+    } else if (project.name == "velocity" || project.name == "paper") {
         tasks.named("shadowJar", ShadowJar::class) {
             destinationDirectory.set(rootProject.layout.buildDirectory.dir("libs"))
             archiveClassifier.set("")
