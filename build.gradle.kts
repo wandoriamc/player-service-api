@@ -74,7 +74,7 @@ subprojects {
         tasks.named("shadowJar", ShadowJar::class) {
             enabled = false;
         }
-    } else {
+    } else if (project.name == "velocity" || project.name == "paper"){
         tasks.named("shadowJar", ShadowJar::class) {
             destinationDirectory.set(rootProject.layout.buildDirectory.dir("libs"))
             archiveClassifier.set("")
