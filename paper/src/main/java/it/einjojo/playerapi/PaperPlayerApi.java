@@ -6,6 +6,7 @@ import it.einjojo.playerapi.impl.AbstractPlayerApi;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -18,6 +19,7 @@ public class PaperPlayerApi extends AbstractPlayerApi {
     private final LocalOnlinePlayerAccessor localOnlinePlayerAccessor;
     private final RedisPubSubHandler redisPubSubHandler;
     private @Nullable ConnectionRequestManager connectionRequestManager;
+
 
 
     /**
