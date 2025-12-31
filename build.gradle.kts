@@ -7,7 +7,7 @@ plugins {
     id("me.qoomon.git-versioning") version "6.4.4"
 }
 
-version = "1.5.3"
+version = "1.6.0"
 subprojects {
     apply(plugin = "java-library")
     apply(plugin = "com.gradleup.shadow")
