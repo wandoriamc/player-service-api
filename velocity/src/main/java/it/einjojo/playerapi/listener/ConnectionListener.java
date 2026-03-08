@@ -56,6 +56,13 @@ public class ConnectionListener {
      */
     @Subscribe(async = false)
     public void handleLogin(LoginEvent event, Continuation continuation) {
+        var result = event.getResult();
+        if (!result.isAllowed()) {
+            // If already denied by another plugin, skip PlayerAPI registration
+            logger.warn("Login for player {} was already denied by another plugin, skipping PlayerAPI registration",
+                    event.getPlayer().getUsername());
+            return;
+        }
         var player = event.getPlayer();
         String username = player.getUsername();
         UUID playerId = player.getUniqueId();
