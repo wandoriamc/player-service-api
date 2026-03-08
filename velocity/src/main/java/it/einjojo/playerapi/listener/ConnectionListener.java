@@ -59,20 +59,12 @@ public class ConnectionListener {
         var result = event.getResult();
         if (!result.isAllowed()) {
             // If already denied by another plugin, skip PlayerAPI registration
-            logger.warn("Login for player {} was already denied by another plugin, skipping PlayerAPI registration",
-                    event.getPlayer().getUsername());
+            continuation.resume();
             return;
         }
         var player = event.getPlayer();
         String username = player.getUsername();
         UUID playerId = player.getUniqueId();
-
-
-        logger.info("Registering player {} ({}) with PlayerAPI...", username, playerId);
-
-        // Initially deny with "verifying" message
-        event.setResult(LoginEvent.ComponentResult.denied(VERIFYING_MESSAGE));
-
         // Perform async PlayerAPI registration with timeout
         playerApi.handleLogin(player)
                 .orTimeout(LOGIN_TIMEOUT_SECONDS, TimeUnit.SECONDS)
