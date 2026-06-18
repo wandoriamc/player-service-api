@@ -164,6 +164,7 @@ message ConnectRequest {
   string server_name = 2; // the server-name to connect to
   optional int32 response_key = 3; // If set, the proxy will respond with a ConnectResponse
   optional string reply_channel = 4; // Per-instance Redis channel the proxy should publish the ConnectResponse to
+  optional string proxy_name = 5; // If set, only this proxy should handle the request
 }
 
 // Proxy --redis--> Game

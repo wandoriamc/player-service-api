@@ -3,6 +3,8 @@ package it.einjojo.playerapi;
 import io.grpc.ManagedChannel;
 import it.einjojo.playerapi.config.RedisConnectionConfiguration;
 import it.einjojo.playerapi.impl.AbstractPlayerApi;
+import it.einjojo.playerapi.util.SessionMetadataUtil;
+import org.bukkit.Bukkit;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -45,7 +47,13 @@ public class PaperPlayerApi extends AbstractPlayerApi {
 
     @Override
     public CompletableFuture<ServerConnectResult> connectPlayer(UUID uuid, String serviceName) {
-        return getConnectionRequestManager().sendWithResponse(uuid, serviceName);
+        return resolveProxyName(uuid)
+                .thenCompose(proxyName -> {
+                    if (proxyName == null && !getLocalOnlinePlayerAccessor().isOnline(uuid)) {
+                        return CompletableFuture.completedFuture(ServerConnectResult.PLAYER_NOT_FOUND);
+                    }
+                    return getConnectionRequestManager().sendWithResponse(uuid, serviceName, proxyName);
+                });
     }
 
     public ConnectionRequestManager getConnectionRequestManager() {
@@ -57,7 +65,20 @@ public class PaperPlayerApi extends AbstractPlayerApi {
 
     @Override
     public void connectPlayerToServer(UUID uuid, String serviceName) {
-        getConnectionRequestManager().sendFireAndForget(uuid, serviceName);
+        resolveProxyName(uuid).thenAccept(proxyName ->
+                getConnectionRequestManager().sendFireAndForget(uuid, serviceName, proxyName)
+        );
+    }
+
+    private CompletableFuture<@Nullable String> resolveProxyName(UUID uuid) {
+        var localPlayer = Bukkit.getPlayer(uuid);
+        if (localPlayer != null) {
+            var metadataProxyName = SessionMetadataUtil.getProxyName(localPlayer);
+            if (metadataProxyName.isPresent()) {
+                return CompletableFuture.completedFuture(metadataProxyName.get());
+            }
+        }
+        return getOnlinePlayer(uuid).thenApply(player -> player == null ? null : player.getConnectedProxyName());
     }
 
     @Override

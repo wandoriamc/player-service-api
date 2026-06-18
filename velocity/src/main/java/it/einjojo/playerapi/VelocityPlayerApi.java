@@ -25,7 +25,8 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 public class VelocityPlayerApi extends AbstractPlayerApi implements Consumer<ConnectRequest> {
-    private static final String PROXY_NAME = Optional.ofNullable(System.getenv("PLAYER_API_PROXY_NAME")).orElse("NO_ENV.PLAYER_API_PROXY_NAME");
+    private static final String DEFAULT_PROXY_NAME = "NO_ENV.PLAYER_API_PROXY_NAME";
+    private static final String PROXY_NAME = Optional.ofNullable(System.getenv("PLAYER_API_PROXY_NAME")).orElse(DEFAULT_PROXY_NAME);
     private static final Logger log = LoggerFactory.getLogger(VelocityPlayerApi.class);
     private final LocalOnlinePlayerAccessor localOnlinePlayerAccessor;
     private final RedisPubSubHandler redisPubSubHandler;
@@ -156,6 +157,19 @@ public class VelocityPlayerApi extends AbstractPlayerApi implements Consumer<Con
     @Override
     public void accept(ConnectRequest connectRequest) {
         UUID uuid = UUID.fromString(connectRequest.getUniqueId());
+        boolean hasReliableProxyTarget = connectRequest.hasProxyName()
+                && !connectRequest.getProxyName().isBlank()
+                && !DEFAULT_PROXY_NAME.equals(connectRequest.getProxyName());
+        if (hasReliableProxyTarget && !PROXY_NAME.equals(connectRequest.getProxyName())) {
+            log.debug("Ignoring connect request for player {} targeting proxy {} on proxy {}",
+                    uuid, connectRequest.getProxyName(), PROXY_NAME);
+            return;
+        }
+        if (!hasReliableProxyTarget && proxyServer.getPlayer(uuid).isEmpty()) {
+            log.debug("Ignoring broadcast connect request for player {} because they are not on proxy {}",
+                    uuid, PROXY_NAME);
+            return;
+        }
         String name = connectRequest.getServerName();
         connectPlayer(uuid, name)
                 .thenAccept(result -> respondIfRequired(connectRequest, result))

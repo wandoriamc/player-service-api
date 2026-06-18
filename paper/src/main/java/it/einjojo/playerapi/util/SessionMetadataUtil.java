@@ -28,4 +28,14 @@ public class SessionMetadataUtil {
                 .flatMap(value -> Optional.of(value.asLong()));
     }
 
+    public static Optional<String> getProxyName(Player player) {
+        if (!player.hasMetadata("proxy")) {
+            return Optional.empty();
+        }
+        return player.getMetadata("proxy").stream()
+                .findFirst()
+                .map(MetadataValue::asString)
+                .filter(value -> !value.isBlank());
+    }
+
 }
