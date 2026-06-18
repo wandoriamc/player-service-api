@@ -5,6 +5,7 @@ import it.einjojo.playerapi.util.DistributedIdGenerator;
 import it.einjojo.protocol.player.ConnectRequest;
 import it.einjojo.protocol.player.ConnectResponse;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,13 +107,28 @@ public class ConnectionRequestManager implements Consumer<ConnectResponse>, Auto
      * @param serverName target server name
      */
     public void sendFireAndForget(UUID uuid, String serverName) {
+        sendFireAndForget(uuid, serverName, null);
+    }
+
+    /**
+     * Send a connection request without expecting a response (fire-and-forget).
+     * Use this when you don't care about the result.
+     *
+     * @param uuid       player UUID to connect
+     * @param serverName target server name
+     * @param proxyName  target proxy name, or null to broadcast to any proxy
+     */
+    public void sendFireAndForget(UUID uuid, String serverName, @Nullable String proxyName) {
         Objects.requireNonNull(uuid, "uuid must not be null");
         Objects.requireNonNull(serverName, "serverName must not be null");
 
-        ConnectRequest request = ConnectRequest.newBuilder()
+        ConnectRequest.Builder requestBuilder = ConnectRequest.newBuilder()
                 .setUniqueId(uuid.toString())
-                .setServerName(serverName)
-                .build();
+                .setServerName(serverName);
+        if (proxyName != null && !proxyName.isBlank()) {
+            requestBuilder.setProxyName(proxyName);
+        }
+        ConnectRequest request = requestBuilder.build();
 
         // Async publish - non-blocking
         connection.async()
@@ -137,6 +153,19 @@ public class ConnectionRequestManager implements Consumer<ConnectResponse>, Auto
      * @return a future that completes with the connection result
      */
     public CompletableFuture<ServerConnectResult> sendWithResponse(UUID uuid, String serverName) {
+        return sendWithResponse(uuid, serverName, null);
+    }
+
+    /**
+     * Send a connection request and wait for a response.
+     * The returned future will complete when the target proxy responds or after a timeout.
+     *
+     * @param uuid       player UUID to connect
+     * @param serverName target server name
+     * @param proxyName  target proxy name, or null to broadcast to any proxy
+     * @return a future that completes with the connection result
+     */
+    public CompletableFuture<ServerConnectResult> sendWithResponse(UUID uuid, String serverName, @Nullable String proxyName) {
         Objects.requireNonNull(uuid, "uuid must not be null");
         Objects.requireNonNull(serverName, "serverName must not be null");
 
@@ -149,12 +178,15 @@ public class ConnectionRequestManager implements Consumer<ConnectResponse>, Auto
         // Register pending request before sending
         pendingRequests.put(responseKey, new PendingRequest(responseKey, future, expiryTime));
 
-        ConnectRequest request = ConnectRequest.newBuilder()
+        ConnectRequest.Builder requestBuilder = ConnectRequest.newBuilder()
                 .setUniqueId(uuid.toString())
                 .setServerName(serverName)
                 .setResponseKey(responseKey)
-                .setReplyChannel(replyChannel)
-                .build();
+                .setReplyChannel(replyChannel);
+        if (proxyName != null && !proxyName.isBlank()) {
+            requestBuilder.setProxyName(proxyName);
+        }
+        ConnectRequest request = requestBuilder.build();
 
         // Async publish - non-blocking
         connection.async()
